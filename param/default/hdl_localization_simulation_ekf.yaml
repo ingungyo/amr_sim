@@ -1,0 +1,91 @@
+# robot_localization_ekf.yaml - 매우 보수적인 설정
+/**:
+    ros__parameters:
+      # General Settings
+      use_sim_time: true  # 시뮬레이션 환경과 일치하도록 변경
+      frequency: 20.0   # 50Hz → 30Hz로 낮춤   
+      sensor_timeout: 0.5  # 증가: 센서 데이터 더 오래 기다림  
+      two_d_mode: true
+      transform_time_offset: 0.0
+      transform_timeout: 0.1
+      print_diagnostics: true
+      debug: true  # 디버그 활성화
+      permit_corrected_publication: false
+      publish_acceleration: false
+      publish_tf: true  # odom -> base_footprint transform 발행
+      map_frame: map
+      odom_frame: odom
+      base_link_frame: base_footprint  # HDL localization과 일치하도록 변경
+      world_frame: map  
+      
+      # Wheel odometry (if available)
+      odom0: /odom
+      odom0_config: [true,  true,  false,  # x, y만 사용
+                    false, false, false,   # orientation은 HDL에서
+                    true,  true,  false,   # velocity만 사용
+                    false, false, false,   # angular velocity는 IMU만
+                    false, false, false]   # acceleration 사용 안함
+      odom0_queue_size: 3 
+      odom0_nodelay: true
+      odom0_differential: false
+      odom0_relative: false
+
+      # HDL localization pose (high accuracy)
+      odom1: /hdl_pose
+      odom1_config: [true,  true,  true,    # x, y, z 모두 사용
+                     true,  true,  true,    # roll, pitch, yaw 모두 사용
+                     false, false, false,   # velocity 사용 안함
+                     false, false, false,   # angular velocity 사용 안함
+                     false, false, false]   # acceleration 사용 안함
+      odom1_queue_size: 3
+      odom1_nodelay: true
+      odom1_differential: false
+      odom1_relative: false
+      odom1_rejection_threshold: 5.0  # 완화: HDL 데이터 더 많이 사용  
+
+      # IMU for angular velocity only
+      imu0: /imu
+      imu0_config: [false, false, false,   # position 사용 안함
+                    false, false, false,   # orientation 사용 안함 (HDL에서)
+                    false, false, false,   # velocity 사용 안함
+                    true,  true,  true,    # angular velocity만 사용
+                    false, false, false]   # acceleration 사용 안함
+      imu0_queue_size: 10  
+      imu0_nodelay: true
+      imu0_differential: false
+      imu0_relative: false
+      imu0_remove_gravitational_acceleration: true
+      
+      # Process noise - IMU 
+      process_noise_covariance: [0.1,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.1,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.1,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.1,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.1,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.01,   0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.1,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.1,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.01,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.01,   0.0,    0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.01,   0.0,    0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.01,   0.0,    0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.01,   0.0,    0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.01,   0.0,
+                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.01]
+
+      # Initial estimate covariance - 매우 낮게
+      initial_estimate_covariance: [1e-6, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,   0.0,  0.0,  0.0,
+                                    0.0,  1e-6, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,   0.0,  0.0,  0.0,
+                                    0.0,  0.0,  1e-6, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,   0.0,  0.0,  0.0,
+                                    0.0,  0.0,  0.0,  1e-6, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,   0.0,  0.0,  0.0,
+                                    0.0,  0.0,  0.0,  0.0,  1e-6, 0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,   0.0,  0.0,  0.0,
+                                    0.0,  0.0,  0.0,  0.0,  0.0,  1e-6, 0.0,  0.0,  0.0,  0.0,   0.0,   0.0,   0.0,  0.0,  0.0,
+                                    0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1e-6, 0.0,  0.0,  0.0,   0.0,   0.0,   0.0,  0.0,  0.0,
+                                    0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1e-6, 0.0,  0.0,   0.0,   0.0,   0.0,  0.0,  0.0,
+                                    0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1e-6, 0.0,   0.0,   0.0,   0.0,  0.0,  0.0,
+                                    0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1e-6,  0.0,   0.0,   0.0,  0.0,  0.0,
+                                    0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   1e-6,  0.0,   0.0,  0.0,  0.0,
+                                    0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   1e-6,  0.0,  0.0,  0.0,
+                                    0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,   1e-6, 0.0,  0.0,
+                                    0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,   0.0,  1e-6, 0.0,
+                                    0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,   0.0,  0.0,  1e-6]

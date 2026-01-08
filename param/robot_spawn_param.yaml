@@ -1,0 +1,15 @@
+sim:
+  ros__parameters:
+    use_sim_time: true
+
+    world_pkg: "hamr30_sim"
+    world_name: "samhyun"        # worlds/<world_name>/<world_name>.sdf
+
+    robots:
+      - model: "hamr30" # description/<model>/<model>.xacro
+        name: "robot0"
+        namespace: ""
+        description_pkg: "amr_sim"  
+        ros_gz_bridge_param: "ros_gz_bridge_param" #param/<model>/<ros_gz_bridge_param>.yaml
+        controller_name: "custom_controller" #option : "ros_controller", "custom_controller"
+        initial_pose: [1.0, 2.0, 0.5, 0.0, 0.0, 1.57]

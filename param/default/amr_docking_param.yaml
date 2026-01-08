@@ -1,0 +1,13 @@
+aruco_marker_docking_action_server:
+  ros__parameters:
+    qr_detection_topic: "qr_detection"
+    enc_vel_topic: "enc_vel" #"enc_vel"
+    docking_vel_topic: "docking_vel" #"docking_vel"
+    front_robot_center_link: "front_camera_waypoint_center"
+    rear_robot_center_link: "rear_camera_waypoint_center"
+    angle_filter_alpha: 0.2
+    detection_count_threshold: 50
+    rotation_speed: 0.05
+    linear_speed: 0.05
+    translation_offset_x: 0.016
+    waypoint_offset: 1.1

@@ -1,0 +1,91 @@
+node:
+  - name: "node1"
+    index: 1
+    position:
+      x: -33.0
+      y: 20.0
+    type: 0
+    connection: [2]
+    child: []
+    
+  - name: "node2"
+    index: 2
+    position:
+      x: -33.0
+      y: 7.5
+    type: 0
+    connection: [1, 3]
+    child: []
+    
+  - name: "node3"
+    index: 3
+    position:
+      x: 0.0
+      y: 7.5
+    type: 0
+    connection: [2, 4, 8]
+    child: []
+    
+  - name: "node4"
+    index: 4
+    position:
+      x: 0.0
+      y: 13.0
+    type: 0
+    connection: [3, 5]
+    child: []
+    
+  - name: "node5"
+    index: 5
+    position:
+      x: 30.0
+      y: 13.0
+    type: 0
+    connection: [4, 6]
+    child: []
+    
+  - name: "node6"
+    index: 6
+    position:
+      x: 30
+      y: -19.5
+    type: 0
+    connection: [5, 7]
+    child: []
+
+  - name: "node7"
+    index: 7
+    position:
+      x: 16.5
+      y: -19.5
+    type: 0
+    connection: [6, 8, 9]
+    child: []
+
+  - name: "node8"
+    index: 8
+    position:
+      x: 0.0
+      y: -19.5
+    type: 0
+    connection: [3, 7]
+    child: []
+  
+  - name: "node9"
+    index: 9
+    position:
+      x: 16.5
+      y: -27.0
+    type: 0
+    connection: [7,10]
+    child: []
+  
+  - name: "node10"
+    index: 10
+    position:
+      x: 16.5
+      y: -33.0
+    type: 0
+    connection: [9]
+    child: []
+  

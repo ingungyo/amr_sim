@@ -1,0 +1,402 @@
+<sdf version='1.7'>
+  <model name='wheelchair_sdf'>
+    <link name='base_footprint'>
+      <inertial>
+        <pose>0.230838 0.401825 0.026313 0 -0 0</pose>
+        <mass>10.9739</mass>
+        <inertia>
+          <ixx>0.259978</ixx>
+          <ixy>0.0259379</ixy>
+          <ixz>-0.0797672</ixz>
+          <iyy>0.324759</iyy>
+          <iyz>0.0259873</iyz>
+          <izz>0.239413</izz>
+        </inertia>
+      </inertial>
+      <collision name='base_footprint_fixed_joint_lump__lidar_l_link_collision'>
+        <pose>0.56908 0.28197 0.3404 3.14159 -0 -3.14159</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/lidar_l_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <collision name='base_footprint_fixed_joint_lump__lidar_r_link_collision_1'>
+        <pose>0.56908 -0.28197 0.3404 3.14159 -0 -3.14159</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/lidar_r_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <collision name='base_footprint_fixed_joint_lump__wheelchair_frame_collision_2'>
+        <pose>0.225 0 0 0 0 -1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/wheelchair_frame_base_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <collision name='base_footprint_fixed_joint_lump__camera_l_link_collision_3'>
+        <pose>0.56668 0.28135 0.4248 0 -0 1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/camera_l_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <collision name='base_footprint_fixed_joint_lump__camera_r_link_collision_4'>
+        <pose>0.56668 -0.28265 0.4248 0 -0 1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/camera_r_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='base_footprint_fixed_joint_lump__lidar_l_link_visual'>
+        <pose>0.56908 0.28197 0.3404 3.14159 -0 -3.14159</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/lidar_l_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='base_footprint_fixed_joint_lump__lidar_r_link_visual_1'>
+        <pose>0.56908 -0.28197 0.3404 3.14159 -0 -3.14159</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/lidar_r_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='base_footprint_fixed_joint_lump__wheelchair_frame_visual_2'>
+        <pose>0.225 0 0 0 0 -1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/wheelchair_frame_base_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='base_footprint_fixed_joint_lump__camera_l_link_visual_3'>
+        <pose>0.56668 0.28135 0.4248 0 -0 1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/camera_l_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='base_footprint_fixed_joint_lump__camera_r_link_visual_4'>
+        <pose>0.56668 -0.28265 0.4248 0 -0 1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/camera_r_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='caster_l_joint' type='revolute'>
+      <pose relative_to='base_footprint'>0.45 0.258 0.08225 1.5708 -0 1.5708</pose>
+      <parent>base_footprint</parent>
+      <child>caster_l_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='caster_l_link'>
+      <pose relative_to='caster_l_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>-0 0.104209 -0.006385 0 -0 0</pose>
+        <mass>0.0641234</mass>
+        <inertia>
+          <ixx>0.000140603</ixx>
+          <ixy>-5.25203e-12</ixy>
+          <ixz>-1.35152e-11</ixz>
+          <iyy>4.09045e-05</iyy>
+          <iyz>-3.0634e-05</iyz>
+          <izz>0.000150905</izz>
+        </inertia>
+      </inertial>
+      <collision name='caster_l_link_collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/caster_l_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='caster_l_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/caster_l_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='caster_wheel_l_joint' type='revolute'>
+      <pose relative_to='caster_l_link'>0.0127 0 -0.0508 0 -0 0</pose>
+      <parent>caster_l_link</parent>
+      <child>caster_wheel_l_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='caster_wheel_l_link'>
+      <pose relative_to='caster_wheel_l_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>0.290949</mass>
+        <inertia>
+          <ixx>0.00171793</ixx>
+          <ixy>-6.31695e-20</ixy>
+          <ixz>-4.59796e-21</ixz>
+          <iyy>0.000880038</iyy>
+          <iyz>7.31551e-20</iyz>
+          <izz>0.000880038</izz>
+        </inertia>
+      </inertial>
+      <collision name='caster_wheel_l_link_collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/caster_wheel_l_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='caster_wheel_l_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/caster_wheel_l_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='caster_r_joint' type='revolute'>
+      <pose relative_to='base_footprint'>0.45 -0.258 0.08225 1.5708 -0 1.5708</pose>
+      <parent>base_footprint</parent>
+      <child>caster_r_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='caster_r_link'>
+      <pose relative_to='caster_r_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>-0 0.104209 -0.006385 0 -0 0</pose>
+        <mass>0.0641234</mass>
+        <inertia>
+          <ixx>0.000140603</ixx>
+          <ixy>-5.25203e-12</ixy>
+          <ixz>-1.35152e-11</ixz>
+          <iyy>4.09045e-05</iyy>
+          <iyz>-3.0634e-05</iyz>
+          <izz>0.000150905</izz>
+        </inertia>
+      </inertial>
+      <collision name='caster_r_link_collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/caster_r_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='caster_r_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/caster_r_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='caster_wheel_r_joint' type='revolute'>
+      <pose relative_to='caster_r_link'>0.0127 0 -0.0508 -1.3026 0 0</pose>
+      <parent>caster_r_link</parent>
+      <child>caster_wheel_r_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='caster_wheel_r_link'>
+      <pose relative_to='caster_wheel_r_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0 0 -0 0 -0 0</pose>
+        <mass>0.290949</mass>
+        <inertia>
+          <ixx>0.00171793</ixx>
+          <ixy>-3.23807e-19</ixy>
+          <ixz>8.43925e-20</ixz>
+          <iyy>0.000880038</iyy>
+          <iyz>0</iyz>
+          <izz>0.000880038</izz>
+        </inertia>
+      </inertial>
+      <collision name='caster_wheel_r_link_collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/caster_wheel_r_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='caster_wheel_r_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/caster_wheel_r_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='wheel_l_joint' type='revolute'>
+      <pose relative_to='base_footprint'>0 0.29262 0.3 -1.5708 0 0</pose>
+      <parent>base_footprint</parent>
+      <child>wheel_l_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='wheel_l_link'>
+      <pose relative_to='wheel_l_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0.044108 0 -0 0 -1.5708 0</pose>
+        <mass>1.11786</mass>
+        <inertia>
+          <ixx>0.0783726</ixx>
+          <ixy>4.91793e-18</ixy>
+          <ixz>-7.53746e-18</ixz>
+          <iyy>0.03924</iyy>
+          <iyz>-5.20417e-18</iyz>
+          <izz>0.0392394</izz>
+        </inertia>
+      </inertial>
+      <collision name='wheel_l_link_collision'>
+        <pose>0 0 0 0 1.5708 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/wheel_l_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='wheel_l_link_visual'>
+        <pose>0 0 0 0 -1.5708 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/wheel_l_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='wheel_r_joint' type='revolute'>
+      <pose relative_to='base_footprint'>0 -0.29262 0.3 -1.5708 0 0</pose>
+      <parent>base_footprint</parent>
+      <child>wheel_r_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='wheel_r_link'>
+      <pose relative_to='wheel_r_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0.044108 0 -0 0 1.5708 0</pose>
+        <mass>1.11786</mass>
+        <inertia>
+          <ixx>0.0783726</ixx>
+          <ixy>-1.77125e-18</ixy>
+          <ixz>-1.12761e-19</ixz>
+          <iyy>0.03924</iyy>
+          <iyz>-9.06283e-18</iyz>
+          <izz>0.0392394</izz>
+        </inertia>
+      </inertial>
+      <collision name='wheel_r_link_collision'>
+        <pose>0 0 0 0 1.5708 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/wheel_r_link.STL</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='wheel_r_link_visual'>
+        <pose>0 0 0 0 1.5708 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://robot_simulator/robots/wheelchair/meshes/wheel_r_link.STL</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>

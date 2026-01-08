@@ -1,0 +1,214 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wheelchair_ignition_plugins">
+  <!-- Diff Drive and basic sensor plugins for Ignition Gazebo -->
+
+  <xacro:arg name="is_first_robot" default="false"/>
+
+  <!-- Sensors system plugin (load once for the first robot) -->
+  <xacro:if value="$(arg is_first_robot)">
+    <gazebo>
+      <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
+        <render_engine>ogre2</render_engine>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+
+  <!-- Joint state publisher plugin for each robot -->
+  <gazebo>
+      <plugin filename="ignition-gazebo-joint-state-publisher-system" name="ignition::gazebo::systems::JointStatePublisher">
+        <joint_name>wheel_l_joint</joint_name>
+        <joint_name>wheel_r_joint</joint_name>
+        <joint_name>caster_l_joint</joint_name>
+        <joint_name>caster_r_joint</joint_name>
+        <joint_name>caster_wheel_l_joint</joint_name>
+        <joint_name>caster_wheel_r_joint</joint_name>
+      </plugin>
+  </gazebo>
+
+  <!-- Differential drive using the main wheels -->
+  <gazebo>
+    <plugin filename="ignition-gazebo-diff-drive-system" name="ignition::gazebo::systems::DiffDrive">
+      <left_joint>$(arg wheel_left_joint)</left_joint>
+      <right_joint>$(arg wheel_right_joint)</right_joint>
+      <wheel_separation>$(arg wheel_separation)</wheel_separation>
+      <wheel_radius>$(arg wheel_radius)</wheel_radius>
+      <odom_publish_frequency>$(arg odom_publish_frequency)</odom_publish_frequency>
+      <topic>$(arg robot_name)/cmd_vel</topic>
+      <frame_id>$(arg robot_name)/odom</frame_id>
+      <child_frame_id>$(arg robot_name)/base_footprint</child_frame_id>
+    </plugin>
+  </gazebo>
+
+  <!-- Wheel physics properties -->
+  <!-- Drive wheels - high friction for good traction -->
+  <!-- <gazebo reference="wheel_r_link">
+    <mu1>5.0</mu1>
+    <mu2>5.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>3.0</maxVel>
+    <maxVel2>1.5</maxVel2>
+  </gazebo>
+  <gazebo reference="wheel_l_link">
+    <mu1>5.0</mu1>
+    <mu2>5.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>3.0</maxVel>
+    <maxVel2>1.5</maxVel2>
+  </gazebo> -->
+
+  <!-- Caster wheels - almost no friction to minimize interference -->
+  <gazebo reference="caster_wheel_r_link">
+    <mu1>0.0001</mu1>
+    <mu2>0.0001</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>0.1</maxVel>
+    <maxVel2>0.05</maxVel2>
+  </gazebo>
+  <gazebo reference="caster_wheel_l_link">
+    <mu1>0.0001</mu1>
+    <mu2>0.0001</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>0.1</maxVel>
+    <maxVel2>0.05</maxVel2>
+  </gazebo>
+
+  <gazebo>
+      <plugin filename="libignition-gazebo6-odometry-publisher-system"
+          name="ignition::gazebo::systems::OdometryPublisher">
+          <odom_frame>$(arg robot_name)/odom</odom_frame>
+          <robot_base_frame>$(arg robot_name)/base_footprint</robot_base_frame>
+          <odom_topic>$(arg robot_name)/odom</odom_topic>
+          <tf_topic>$(arg robot_name)/tf</tf_topic>
+          <dimensions>2</dimensions>
+          <odom_publish_frequency>$(arg odom_publish_frequency)</odom_publish_frequency>
+      </plugin>
+  </gazebo>
+
+  <!-- 2D LiDAR sensors (if lidar_enabled) -->
+  <xacro:if value="$(arg lidar_enabled)">
+    <!-- Right LiDAR -->
+    <gazebo reference="lidar_r_link">
+      <sensor name="gpu_lidar_right_$(arg robot_name)_sensor" type="gpu_lidar">
+        <topic>$(arg robot_name)/scan_right</topic>
+        <update_rate>$(arg lidar_update_rate)</update_rate>
+        <ignition_frame_id>$(arg robot_name)/$(arg lidar_r_frame_id)</ignition_frame_id>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>$(arg lidar_samples)</samples>
+              <resolution>$(arg lidar_resolution)</resolution>
+              <min_angle>$(arg lidar_min_angle)</min_angle>
+              <max_angle>$(arg lidar_max_angle)</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>$(arg lidar_range_min)</min>
+            <max>$(arg lidar_range_max)</max>
+            <resolution>$(arg lidar_range_resolution)</resolution>
+          </range>
+          <noise>
+              <type>gaussian</type>
+              <mean>$(arg lidar_noise_mean)</mean>
+              <stddev>$(arg lidar_noise_stddev)</stddev>
+          </noise>
+        </lidar>
+        <alwaysOn>true</alwaysOn>
+        <visualize>true</visualize>
+      </sensor>
+    </gazebo>
+
+    <!-- Left LiDAR -->
+    <gazebo reference="lidar_l_link">
+      <sensor name="gpu_lidar_left_$(arg robot_name)_sensor" type="gpu_lidar">
+        <topic>$(arg robot_name)/scan_left</topic>
+        <update_rate>$(arg lidar_update_rate)</update_rate>
+        <ignition_frame_id>$(arg robot_name)/$(arg lidar_l_frame_id)</ignition_frame_id>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>$(arg lidar_samples)</samples>
+              <resolution>$(arg lidar_resolution)</resolution>
+              <min_angle>$(arg lidar_min_angle)</min_angle>
+              <max_angle>$(arg lidar_max_angle)</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>$(arg lidar_range_min)</min>
+            <max>$(arg lidar_range_max)</max>
+            <resolution>$(arg lidar_range_resolution)</resolution>
+          </range>
+          <noise>
+              <type>gaussian</type>
+              <mean>$(arg lidar_noise_mean)</mean>
+              <stddev>$(arg lidar_noise_stddev)</stddev>
+          </noise>
+        </lidar>
+        <alwaysOn>true</alwaysOn>
+        <visualize>true</visualize>
+      </sensor>
+    </gazebo>
+  </xacro:if>
+
+  <!-- Cameras (if camera_enabled) -->
+  <xacro:if value="$(arg camera_enabled)">
+    <!-- Right camera -->
+    <gazebo reference="camera_r_link">
+      <sensor type="camera" name="camera_right_$(arg robot_name)_sensor">
+        <update_rate>$(arg camera_update_rate)</update_rate>
+        <topic>$(arg robot_name)/camera_right/image_raw</topic>
+        <ignition_frame_id>$(arg robot_name)/$(arg camera_r_optical_link_frame_id)</ignition_frame_id>
+        <camera_info_topic>$(arg robot_name)/camera_right/camera_info</camera_info_topic>
+        <horizontal_fov>$(arg camera_right_horizontal_fov)</horizontal_fov>
+        <image>
+          <width>$(arg camera_right_width)</width>
+          <height>$(arg camera_right_height)</height>
+          <format>$(arg camera_right_format)</format>
+        </image>
+        <clip><near>$(arg camera_right_near)</near><far>$(arg camera_right_far)</far></clip>
+        <alwaysOn>true</alwaysOn>
+        <visualize>true</visualize>
+      </sensor>
+    </gazebo>
+
+    <!-- Left camera -->
+    <gazebo reference="camera_l_link">
+      <sensor type="camera" name="camera_left_$(arg robot_name)_sensor">
+        <update_rate>$(arg camera_update_rate)</update_rate>
+        <topic>$(arg robot_name)/camera_left/image_raw</topic>
+        <ignition_frame_id>$(arg robot_name)/$(arg camera_l_optical_link_frame_id)</ignition_frame_id>
+        <camera_info_topic>$(arg robot_name)/camera_left/camera_info</camera_info_topic>
+        <horizontal_fov>$(arg camera_left_horizontal_fov)</horizontal_fov>
+        <image>
+          <width>$(arg camera_left_width)</width>
+          <height>$(arg camera_left_height)</height>
+          <format>$(arg camera_left_format)</format>
+        </image>
+        <clip><near>$(arg camera_left_near)</near><far>$(arg camera_left_far)</far></clip>
+        <alwaysOn>true</alwaysOn>
+        <visualize>true</visualize>
+      </sensor>
+    </gazebo>
+  </xacro:if>
+
+  <!-- IMU (if imu_enabled) -->
+  <xacro:if value="$(arg imu_enabled)">
+    <gazebo reference="imu_frame">
+      <sensor name="imu_sensor_$(arg robot_name)_sensor" type="imu">
+        <update_rate>$(arg imu_update_rate)</update_rate>
+        <ignition_frame_id>$(arg robot_name)/$(arg imu_frame_id)</ignition_frame_id>
+        <topic>$(arg robot_name)/imu</topic>
+        <alwaysOn>true</alwaysOn>
+        <visualize>true</visualize>
+      </sensor>
+    </gazebo>
+  </xacro:if>
+
+</robot> 

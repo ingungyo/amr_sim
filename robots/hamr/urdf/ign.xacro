@@ -1,0 +1,376 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="bcr_bot">
+
+    <!-- ........................... SENSOR PLUGIN ................................... -->
+
+    <gazebo>
+        <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
+            <render_engine>ogre2</render_engine>
+        </plugin>
+
+        <plugin filename="ignition-gazebo-imu-system" name="ignition::gazebo::systems::Imu">
+        </plugin>
+
+        <plugin filename="ignition-gazebo-joint-state-publisher-system" name="ignition::gazebo::systems::JointStatePublisher">
+        </plugin>
+
+        <!-- ........................... DIFFERENTIAL DRIVE PLUGIN ................................... -->
+
+        <plugin filename="ignition-gazebo-diff-drive-system" name="ignition::gazebo::systems::DiffDrive">
+            <left_joint>middle_left_wheel_joint</left_joint>
+            <right_joint>middle_right_wheel_joint</right_joint>
+            <wheel_separation>${traction_track_width+traction_wheel_width-0.01}</wheel_separation>
+            <wheel_radius>${traction_wheel_radius+0.01}</wheel_radius>
+            <odom_publish_frequency>30</odom_publish_frequency>
+            <topic>/cmd_vel</topic>
+            <xacro:if value="${odometry_source == 'encoders'}">
+                <odom_topic>$(arg wheel_odom_topic)</odom_topic>
+                <tf_topic>/tf</tf_topic>
+            </xacro:if>
+            <frame_id>odom</frame_id>
+            <child_frame_id>base_footprint</child_frame_id>
+        </plugin>
+    </gazebo>
+
+    <!-- ............................. ground truth .................................... -->
+
+    <xacro:if value="${odometry_source == 'world'}">
+    <gazebo>
+        <plugin filename="libignition-gazebo6-odometry-publisher-system"
+            name="ignition::gazebo::systems::OdometryPublisher">
+            <odom_frame>odom</odom_frame>
+            <robot_base_frame>base_footprint</robot_base_frame>
+            <odom_topic>$(arg wheel_odom_topic)</odom_topic>
+            <tf_topic>/tf</tf_topic>
+            <dimensions>2</dimensions>
+            <odom_publish_frequency>10</odom_publish_frequency>
+        </plugin>
+    </gazebo>
+    </xacro:if>
+
+    <!-- ........................... 2D LIDAR config ................................... -->
+
+    <xacro:if value="$(arg two_d_lidar_enabled)">
+        <gazebo reference="gpu_lidar">
+            <sensor name='gpu_lidar' type='gpu_lidar'>
+                <topic>scan</topic>
+                <update_rate>${two_d_lidar_update_rate}</update_rate>
+                <ignition_frame_id>gpu_lidar</ignition_frame_id>
+                <lidar>
+                    <scan>
+                        <horizontal>
+                            <samples>${two_d_lidar_sample_size}</samples>
+                            <resolution>1</resolution>
+                            <min_angle>${radians(two_d_lidar_min_angle)}</min_angle>
+                            <max_angle>${radians(two_d_lidar_max_angle)}</max_angle>
+                        </horizontal>
+                        <vertical>
+                            <samples>16</samples>              <!-- 수직 해상도 -->
+                            <min_angle>-0.127409</min_angle>   <!-- -15도 -->
+                            <max_angle> 0.617846</max_angle>   <!-- +15도 -->
+                        </vertical>
+                    </scan>
+                    <range>
+                        <min>${two_d_lidar_min_range}</min>
+                        <max>${two_d_lidar_max_range}</max>
+                        <resolution>0.01</resolution>
+                    </range>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.001</stddev>
+                    </noise>
+                </lidar>
+                <output_type>point_cloud</output_type>
+                <alwaysOn>1</alwaysOn>
+                <visualize>true</visualize>
+            </sensor>
+        </gazebo>
+    </xacro:if>
+
+    <!-- ........................... IMU config ................................... -->
+
+    <gazebo reference="imu_frame">
+        <sensor name="imu_sensor" type="imu">
+            <always_on>1</always_on>
+            <update_rate>1</update_rate>
+            <ignition_frame_id>imu_frame</ignition_frame_id>
+            <visualize>true</visualize>
+            <topic>imu</topic>
+        </sensor>
+    </gazebo>
+
+    <!-- ........................... front kinect_camera ................................... -->
+
+    <xacro:if value="$(arg front_kinect_camera_enabled)">
+        <gazebo reference="front_kinect_camera">
+            <sensor type="depth_camera" name="front_kinect_camera">
+            <update_rate>30.0</update_rate>
+            <topic>front_kinect_camera</topic>
+            <ignition_frame_id>front_kinect_camera_optical</ignition_frame_id>
+            <camera_info_topic>front_kinect_camera/camera_info</camera_info_topic>
+            <camera>
+                <horizontal_fov>${radians(camera_horizontal_fov)}</horizontal_fov>
+                <image>
+                <width>640</width>
+                <height>480</height>
+                <format>R8G8B8</format>
+                </image>
+                <clip>
+                <near>0.05</near>
+                <far>8.0</far>
+                </clip>
+            </camera>
+            </sensor>
+        </gazebo>
+    </xacro:if>
+
+     <!-- ........................... front Stereo camera ................................... -->
+    <xacro:if value="$(arg front_stereo_camera_enabled)">
+        <gazebo reference="front_stereo_camera">
+            <sensor type="camera" name="front_stereo_camera_right">
+            <update_rate>10.0</update_rate>
+            <always_on>true</always_on>
+            <ignition_frame_id>front_stereo_camera_optical</ignition_frame_id>
+            <pose>0 -0.12 0 0 0 0</pose>
+            <topic>front_stereo_camera/right/image_raw</topic>
+            <camera_info_topic>front_stereo_camera/right/camera_info</camera_info_topic>
+            <horizontal_fov>1.3962634</horizontal_fov>
+            <image>
+                <width>1024</width>
+                <height>1024</height>
+                <format>R8G8B8</format>
+            </image>
+            <clip>
+                <near>0.3</near>
+                <far>20</far>
+            </clip>
+            </sensor>
+
+            <sensor type="camera" name="front_stereo_camera_left">
+                <update_rate>10.0</update_rate>
+                <always_on>true</always_on>
+                <ignition_frame_id>front_stereo_camera_optical</ignition_frame_id>
+                <pose>0 0 0 0 0 0</pose>
+                <topic>front_stereo_camera/left/image_raw</topic>
+                <camera_info_topic>front_stereo_camera/left/camera_info</camera_info_topic>
+                <horizontal_fov>1.3962634</horizontal_fov>
+                <image>
+                    <width>1024</width>
+                    <height>1024</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.3</near>
+                    <far>20</far>
+                </clip>
+            </sensor>
+        </gazebo>
+    </xacro:if>
+
+    <!-- ........................... back kinect camera ................................... -->
+
+    <xacro:if value="$(arg back_kinect_camera_enabled)">
+        <gazebo reference="back_kinect_camera">
+            <sensor type="depth_camera" name="back_kinect_camera">
+                <update_rate>30.0</update_rate>
+                <topic>back_kinect_camera</topic>
+                <ignition_frame_id>back_kinect_camera_optical</ignition_frame_id>
+                <camera_info_topic>back_kinect_camera/camera_info</camera_info_topic>
+                <camera>
+                    <horizontal_fov>${radians(camera_horizontal_fov)}</horizontal_fov>
+                    <image>
+                        <width>640</width>
+                        <height>480</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.05</near>
+                        <far>8.0</far>
+                    </clip>
+                </camera>
+            </sensor>
+        </gazebo>
+    </xacro:if>
+
+    <!-- ........................... back Stereo camera ................................... -->
+    <xacro:if value="$(arg back_stereo_camera_enabled)">
+        <gazebo reference="back_stereo_camera">
+            <sensor type="camera" name="back_stereo_camera_right">
+                <update_rate>10.0</update_rate>
+                <always_on>true</always_on>
+                <ignition_frame_id>back_stereo_camera_optical</ignition_frame_id>
+                <pose>0 -0.12 0 0 0 0</pose>
+                <topic>back_stereo_camera/right/image_raw</topic>
+                <camera_info_topic>back_stereo_camera/right/camera_info</camera_info_topic>
+                <horizontal_fov>1.3962634</horizontal_fov>
+                <image>
+                    <width>1024</width>
+                    <height>1024</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.3</near>
+                    <far>20</far>
+                </clip>
+            </sensor>
+
+            <sensor type="camera" name="back_stereo_camera_left">
+                <topic>back_stereo_camera/left/image_raw</topic>
+                <update_rate>10.0</update_rate>
+                <always_on>true</always_on>
+                <ignition_frame_id>back_stereo_camera_optical</ignition_frame_id>
+                <camera_info_topic>back_stereo_camera/left/camera_info</camera_info_topic>
+                <pose>0 0 0 0 0 0</pose>
+                <horizontal_fov>1.3962634</horizontal_fov>
+                <image>
+                    <width>1024</width>
+                    <height>1024</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.3</near>
+                    <far>20</far>
+                </clip>
+            </sensor>
+        </gazebo>
+    </xacro:if>
+
+    <!-- ........................... left kinect camera ................................... -->
+
+    <xacro:if value="$(arg left_kinect_camera_enabled)">
+        <gazebo reference="left_kinect_camera">
+            <sensor type="depth_camera" name="left_kinect_camera">
+                <update_rate>30.0</update_rate>
+                <topic>left_kinect_camera</topic>
+                <ignition_frame_id>left_kinect_camera_optical</ignition_frame_id>
+                <camera_info_topic>left_kinect_camera/camera_info</camera_info_topic>
+                <camera>
+                    <horizontal_fov>${radians(camera_horizontal_fov)}</horizontal_fov>
+                    <image>
+                        <width>640</width>
+                        <height>480</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.05</near>
+                        <far>8.0</far>
+                    </clip>
+                </camera>
+            </sensor>
+        </gazebo>
+    </xacro:if>
+
+    <!-- ........................... left Stereo camera ................................... -->
+    <xacro:if value="$(arg left_stereo_camera_enabled)">
+        <gazebo reference="left_stereo_camera">
+            <sensor type="camera" name="left_stereo_camera_right">
+                <update_rate>10.0</update_rate>
+                <always_on>true</always_on>
+                <ignition_frame_id>left_stereo_camera_optical</ignition_frame_id>
+                <pose>0 -0.12 0 0 0 0</pose>
+                <topic>left_stereo_camera/right/image_raw</topic>
+                <camera_info_topic>left_stereo_camera/right/camera_info</camera_info_topic>
+                <horizontal_fov>1.3962634</horizontal_fov>
+                <image>
+                    <width>1024</width>
+                    <height>1024</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.3</near>
+                    <far>20</far>
+                </clip>
+            </sensor>
+
+            <sensor type="camera" name="left_stereo_camera_left">
+                <topic>left_stereo_camera/left/image_raw</topic>
+                <update_rate>10.0</update_rate>
+                <always_on>true</always_on>
+                <ignition_frame_id>left_stereo_camera_optical</ignition_frame_id>
+                <camera_info_topic>left_stereo_camera/left/camera_info</camera_info_topic>
+                <pose>0 0 0 0 0 0</pose>
+                <horizontal_fov>1.3962634</horizontal_fov>
+                <image>
+                    <width>1024</width>
+                    <height>1024</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.3</near>
+                    <far>20</far>
+                </clip>
+            </sensor>
+        </gazebo>
+    </xacro:if>
+
+    <!-- ........................... right kinect camera ................................... -->
+
+    <xacro:if value="$(arg right_kinect_camera_enabled)">
+        <gazebo reference="right_kinect_camera">
+            <sensor type="depth_camera" name="right_kinect_camera">
+                <update_rate>30.0</update_rate>
+                <topic>right_kinect_camera</topic>
+                <ignition_frame_id>right_kinect_camera_optical</ignition_frame_id>
+                <camera_info_topic>right_kinect_camera/camera_info</camera_info_topic>
+                <camera>
+                    <horizontal_fov>${radians(camera_horizontal_fov)}</horizontal_fov>
+                    <image>
+                        <width>640</width>
+                        <height>480</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.05</near>
+                        <far>8.0</far>
+                    </clip>
+                </camera>
+            </sensor>
+        </gazebo>
+    </xacro:if>
+
+    <!-- ............................. Right STEREO CAMERA ........................................ -->
+
+    <xacro:if value="$(arg right_stereo_camera_enabled)">
+        <gazebo reference="right_stereo_camera">
+            <sensor type="camera" name="right_stereo_camera_right">
+                <update_rate>10.0</update_rate>
+                <always_on>true</always_on>
+                <ignition_frame_id>right_stereo_camera_optical</ignition_frame_id>
+                <pose>0 -0.12 0 0 0 0</pose>
+                <topic>right_stereo_camera/right/image_raw</topic>
+                <camera_info_topic>right_stereo_camera/right/camera_info</camera_info_topic>
+                <horizontal_fov>1.3962634</horizontal_fov>
+                <image>
+                    <width>1024</width>
+                    <height>1024</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.3</near>
+                    <far>20</far>
+                </clip>
+            </sensor>
+
+            <sensor type="camera" name="right_stereo_camera_left">
+                <topic>right_stereo_camera/left/image_raw</topic>
+                <update_rate>10.0</update_rate>
+                <always_on>true</always_on>
+                <ignition_frame_id>right_stereo_camera_optical</ignition_frame_id>
+                <camera_info_topic>right_stereo_camera/left/camera_info</camera_info_topic>
+                <pose>0 0 0 0 0 0</pose>
+                <horizontal_fov>1.3962634</horizontal_fov>
+                <image>
+                    <width>1024</width>
+                    <height>1024</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.3</near>
+                    <far>20</far>
+                </clip>
+            </sensor>
+        </gazebo>
+    </xacro:if>
+    
+</robot>

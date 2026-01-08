@@ -1,0 +1,70 @@
+/amr_pointcloud_merger:
+  ros__parameters:
+    output_topic: "/points"
+    fixed_frame: "laser_link"
+    front_input_topic: "front/scan/points"
+    rear_input_topic: "rear/scan/points"
+
+    self_box:
+      enabled: true
+      cx: 0.0
+      cy: 0.0
+      length: 2.80   # X (앞-뒤)
+      width:  1.80  # Y (좌-우)
+      yaw_deg: 0.0   # base_link와 평행이면 0
+      margin: 0.03   # 2~5cm 권장, 일단 3cm
+      use_z: false
+      z_min: -0.10
+      z_max:  0.60
+
+    extra_box:
+      enabled: false
+      cx: 0.0
+      cy: 0.0
+      length: 0.30
+      width:  0.25
+      yaw_deg: 0.0
+      margin: 0.0
+      use_z: false
+      z_min: -0.10
+      z_max:  0.60
+
+    radius_filter:
+      enabled: false
+      r: 0.55
+      cx: 0.0
+      cy: 0.0
+
+/lidar_front:
+  ros__parameters:
+    # scanner_type: "sick_multiscan"
+    hostname: "192.168.127.40"
+    udp_receiver_ip: "192.168.127.30"
+    udp_port: "2115"
+    check_udp_receiver_port: "2116"
+    imu_udp_port: "7503"
+    nodename: "multiScan001"
+    publish_frame_id: "link_sensor_lidar_front"
+    tf_publish_rate: "0.0"
+    use_sopas_startup_cmds: "false"
+    set_udp_ip_port: "false"
+    sopas_tcp_port: "2111"
+    custom_pointclouds: "cloud_unstructured_fullframe"
+    cloud_unstructured_fullframe: "coordinateNotation=0 updateMethod=0 echos=0,1,2 layers=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 reflectors=0,1 infringed=0,1 rangeFilter=0.05,999,1 topic=/front/scan/points frameid=link_sensor_lidar_front publish=1"
+
+/lidar_back:
+  ros__parameters:
+    # scanner_type: "sick_multiscan"
+    hostname: "192.168.127.50"
+    udp_receiver_ip: "192.168.127.30"
+    udp_port: "2117"
+    check_udp_receiver_port: "2118"
+    imu_udp_port: "7504"
+    nodename: "multiScan002"
+    publish_frame_id: "link_sensor_lidar_rear"
+    tf_publish_rate: "0.0"
+    use_sopas_startup_cmds: "false" 
+    set_udp_ip_port: "false"
+    sopas_tcp_port: "2112"
+    custom_pointclouds: "cloud_unstructured_fullframe"
+    cloud_unstructured_fullframe: "coordinateNotation=0 updateMethod=0 echos=0,1,2 layers=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 reflectors=0,1 infringed=0,1 rangeFilter=0.05,999,1 topic=/rear/scan/points frameid=link_sensor_lidar_rear publish=1"

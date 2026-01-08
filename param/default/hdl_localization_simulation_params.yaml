@@ -1,0 +1,126 @@
+# =============================================================================
+# HDL Localization & PointCloud Converter Unified Parameters
+# =============================================================================
+
+# Performance tuning guide
+# 1. 정확도 향상:
+#    - ndt_resolution을 0.1~0.2로 낮춤
+#    - downsample_resolution을 0.02~0.05로 낮춤
+#    - ndt_neighbor_search_radius를 2.0~3.0으로 증가
+#
+# 2. 속도 향상:
+#    - ndt_resolution을 0.5~1.0으로 증가
+#    - downsample_resolution을 0.1~0.2로 증가
+#    - ndt_neighbor_search_radius를 1.0~1.5로 감소
+#
+# 3. 안정성 향상:
+#    - cool_time_duration을 2.0~5.0으로 증가
+#    - tf_publish_rate를 30.0~50.0으로 설정
+
+# =============================================================================
+# HDL LOCALIZATION PARAMETERS (HDL 로컬라이제이션 파라미터)
+# =============================================================================
+
+HdlLocalizationNodelet:
+  ros__parameters:
+    # Common settings
+    use_sim_time: true
+    
+    # Basic settings
+    use_imu: true
+    invert_imu_acc: false
+    invert_imu_gyro: false
+    use_global_localization: false # false-> Disable Global Localization
+    enable_robot_odometry_prediction: true
+    plot_estimation_errors: false
+
+    # Frame settings
+    odom_child_frame_id: "base_footprint"
+    robot_odom_frame_id: "odom"  # robot_odom → odom으로 설정
+
+    # Topic settings
+    points_topic: "/points"
+    imu_topic: "/imu"
+    globalmap_topic: "/globalmap"
+    initialpose_topic: "/initialpose"
+    pose_topic: "/hdl_pose"
+    aligned_points_topic: "/aligned_points"
+    status_topic: "/status"
+    relocalize_service: "/relocalize"
+
+    # Global map settings
+    # Note: Only specify filename here, full path is constructed in launch file
+    globalmap_pcd: "samhyun_sim.pcd"
+    convert_utm_to_local: true
+    downsample_resolution: 0.05  # Increased to prevent overflow with UTM coordinates
+
+    # HDL Localization core parameters
+    # Cool down time (seconds)
+    cool_time_duration: 1.5  
+
+    # TF settings
+    send_tf_transforms: true
+    tf_publish_rate: 50.0  
+
+    # NDT algorithm settings
+    # Available reg_method: NDT_OMP, NDT_CUDA_P2D, NDT_CUDA_D2D
+    reg_method: "NDT_OMP"
+
+    # NDT neighbor search method: DIRECT1, DIRECT7, KDTREE
+    ndt_neighbor_search_method: "DIRECT7"
+
+    # NDT neighbor search radius (meters)
+    ndt_neighbor_search_radius: 10.0  # Very Important For Localization Performance
+
+    # NDT resolution (meters) - lower is more accurate but slower
+    ndt_resolution: 1.5  # Increased to prevent overflow with large coordinates
+
+
+    # Initial position settings
+    specify_init_pose: true
+    init_pos_x: 1.0
+    init_pos_y: 2.0
+    init_pos_z: 1.2
+    init_ori_w: 0.707388
+    init_ori_x: 0.0
+    init_ori_y: 0.0
+    init_ori_z: 0.706825
+
+# =============================================================================
+# GLOBALMAP SERVER PARAMETERS (글로벌맵 서버 파라미터)
+# =============================================================================
+
+GlobalmapServerNodelet:
+  ros__parameters:
+    # Common settings
+    use_sim_time: true
+    
+    # Global map settings
+    # Note: Only specify filename here, full path is constructed in launch file
+    globalmap_pcd: "samhyun_sim.pcd"
+    convert_utm_to_local: true
+    downsample_resolution: 0.05  # Increased to prevent overflow with UTM coordinates
+
+# =============================================================================
+# POINTCLOUD CONVERTER PARAMETERS (포인트클라우드 컨버터 파라미터)
+# =============================================================================
+
+pointcloud_converter:
+  ros__parameters:
+    # Common settings
+    use_sim_time: true
+    
+    # Pointcloud Topic Input/Output
+    pointcloud_topic_input: "/scan/points"        # points in realworld
+    pointcloud_topic_output: "/points_filtered"
+    output_frame_id: "lidar_link"                 # base_scan in realworld
+
+    # Ground plane removal parameters
+    enable_ground_removal: true          # Enable/disable ground plane removal
+    ground_distance_threshold: 5.0       # Distance threshold for RANSAC (meters) - decreased for more precision
+    ground_max_iterations: 5000          # Maximum iterations for RANSAC - increased for better accuracy
+    ground_probability: 0.8             # Probability of finding the correct model - increased for reliability
+    
+    # Height-based filtering parameters
+    ground_height_threshold: 0.3         # Height range above lowest point to consider for ground (meters) - decreased
+    ground_max_angle: 30.0               # Maximum angle from horizontal to consider as ground (degrees) - decreased
