@@ -2,7 +2,7 @@ sim:
   ros__parameters:
     use_sim_time: true
 
-    world_pkg: "hamr30_sim"
+    world_pkg: "amr_sim"
     world_name: "samhyun"        # worlds/<world_name>/<world_name>.sdf
 
     robots:
