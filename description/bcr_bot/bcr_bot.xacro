@@ -24,7 +24,7 @@
     <xacro:property name="traction_wheel_width" value="0.05"/>
     <xacro:property name="traction_track_width" value="0.6"/>
 
-    <xacro:property name="two_d_lidar_update_rate" value="30"/>
+    <xacro:property name="two_d_lidar_update_rate" value="20"/>
     <xacro:property name="two_d_lidar_sample_size" value="2117"/>
     <xacro:property name="two_d_lidar_min_angle" value="0"/>
     <xacro:property name="two_d_lidar_max_angle" value="360"/>
