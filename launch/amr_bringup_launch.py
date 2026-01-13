@@ -21,7 +21,7 @@ def generate_launch_description():
 
     robot_description_dir = PathJoinSubstitution([amr_bringup_dir, 'description', 'hamr'])
     amr_bringup_launch_file_dir = os.path.join(amr_bringup_dir, "launch")
-    amr_model = 'hamr30/' # default = 'default/' ex)ammr = 'ammr/'
+    amr_model = 'bcr_bot/' # default = 'default/' ex)ammr = 'ammr/'
     core_param_filename = amr_model + 'amr_core_param.yaml'
     docking_param_filename = amr_model + 'amr_docking_param.yaml'
     interface_param_filename = amr_model + 'amr_interface_param.yaml'
@@ -29,10 +29,10 @@ def generate_launch_description():
     rear_lidar_param_filename = amr_model + 'amr_sick_picoscan_rear.launch'
     lidar_merger_param_filename = amr_model + 'amr_lidar_merger_param.yaml'
     pointcloud_merger_param_filename = amr_model + 'amr_pointcloud_merger_param.yaml'
-    robot_description_filename = 'hamr.xacro'
+    robot_description_filename = 'bcr_bot.xacro'
 
     navigation_param_filename = amr_model + 'nav2_params.yaml'
-    navigation_map_filename = 'samhyun_map.yaml'
+    navigation_map_filename = 'test_sh.yaml'
 
     namespace = LaunchConfiguration('namespace')
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -96,7 +96,7 @@ def generate_launch_description():
             'use_state_publisher': 'false',
             'use_dual_lidar': 'false',
             'use_lidar_merger': 'false',
-            'use_pointcloud_merger': 'true',
+            'use_pointcloud_merger': 'false',
             'use_core': 'false',
             'use_docking': 'false',
             'use_interface': 'false',

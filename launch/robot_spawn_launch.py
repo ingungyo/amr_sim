@@ -24,7 +24,7 @@ def generate_launch_description():
    
     sim_pkg_dir = get_package_share_directory("amr_sim")
     # swerve_controller_dir = get_package_share_directory("swerve_controller")
-    swerve_controller_dir = get_package_share_directory("zinger_swerve_controller_cpp")
+    # swerve_controller_dir = get_package_share_directory("zinger_swerve_controller_cpp")
 
     use_sim_time = LaunchConfiguration("use_sim_time")
     namespace = LaunchConfiguration("namespace")
@@ -184,26 +184,26 @@ def generate_launch_description():
 
     ##########################TODO##########################################
     ## select controller ###################################################
-    controller_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            PathJoinSubstitution([sim_pkg_dir, 'launch',
-                                  'swerve_controllers.launch.py'])
-        ),
-        launch_arguments={
-            'use_sim_time': use_sim_time,
-        }.items()
-    )
+    # controller_launch = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         PathJoinSubstitution([sim_pkg_dir, 'launch',
+    #                               'swerve_controllers.launch.py'])
+    #     ),
+    #     launch_arguments={
+    #         'use_sim_time': use_sim_time,
+    #     }.items()
+    # )
 
-    swerve_controller_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            PathJoinSubstitution([swerve_controller_dir, 'launch',
-                                  'swerve_controller_cpp.launch.py'])
-        ),
-        launch_arguments={
-            'use_sim_time': use_sim_time,
-            'param_file': PathJoinSubstitution([sim_pkg_dir, 'param', robot_model, 'swerve_controller.yaml'])
-        }.items()
-    )
+    # swerve_controller_launch = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         PathJoinSubstitution([swerve_controller_dir, 'launch',
+    #                               'swerve_controller_cpp.launch.py'])
+    #     ),
+    #     launch_arguments={
+    #         'use_sim_time': use_sim_time,
+    #         'param_file': PathJoinSubstitution([sim_pkg_dir, 'param', robot_model, 'swerve_controller.yaml'])
+    #     }.items()
+    # )
     ########################################################################
 
 
@@ -284,8 +284,8 @@ def generate_launch_description():
     ld.add_action(robot_state_publisher)
     ld.add_action(gz_spawn_entity)
     ld.add_action(gz_ros2_bridge)
-    ld.add_action(controller_launch)
-    ld.add_action(swerve_controller_launch)
+    # ld.add_action(controller_launch)
+    # ld.add_action(swerve_controller_launch)
     return ld
 
 

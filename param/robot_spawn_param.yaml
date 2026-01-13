@@ -6,7 +6,7 @@ sim:
     world_name: "samhyun"        # worlds/<world_name>/<world_name>.sdf
 
     robots:
-      - model: "hamr30" # description/<model>/<model>.xacro
+      - model: "bcr_bot" # description/<model>/<model>.xacro
         name: "robot0"
         namespace: ""
         description_pkg: "amr_sim"  
