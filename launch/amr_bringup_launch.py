@@ -70,7 +70,7 @@ def generate_launch_description():
     )
 
     declare_use_amcl_cmd = DeclareLaunchArgument(
-        'use_amcl', default_value='false',
+        'use_amcl', default_value='true',
         description='Use AMCL if true',
     )
 

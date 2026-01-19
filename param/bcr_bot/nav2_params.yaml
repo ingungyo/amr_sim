@@ -13,12 +13,12 @@ amcl:
     global_frame_id: "map"
     lambda_short: 0.1
     laser_likelihood_max_dist: 2.0
-    laser_max_range: 100.0
-    laser_min_range: -1.0
+    laser_max_range: 40.0
+    laser_min_range: 0.5
     laser_model_type: "likelihood_field"
-    max_beams: 60
+    max_beams: 720
     max_particles: 2000
-    min_particles: 500
+    min_particles: 1000
     odom_frame_id: "odom"
     pf_err: 0.05
     pf_z: 0.99
@@ -29,7 +29,7 @@ amcl:
     save_pose_rate: 0.5
     sigma_hit: 0.2
     tf_broadcast: true
-    transform_tolerance: 0.5
+    transform_tolerance: 0.3
     update_min_a: 0.2
     update_min_d: 0.25
     z_hit: 0.5
@@ -67,28 +67,22 @@ bt_navigator:
 
 controller_server:
   ros__parameters:
-    controller_frequency: 15.0
-    costmap_update_timeout: 0.30
+    controller_frequency: 20.0
+    costmap_update_timeout: 0.5
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.001
     min_theta_velocity_threshold: 0.01
-    failure_tolerance: 0.5
+    failure_tolerance: 1.0
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"
     controller_plugins: ["FollowPath"]
     use_realtime_priority: false
-
     # Progress checker parameters
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"
       required_movement_radius: 0.2
       movement_time_allowance: 20.0
     # Goal checker parameters
-    #precise_goal_checker:
-    #  plugin: "nav2_controller::SimpleGoalChecker"
-    #  xy_goal_tolerance: 0.25
-    #  yaw_goal_tolerance: 0.25
-    #  stateful: True
     general_goal_checker:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
@@ -96,39 +90,38 @@ controller_server:
       yaw_goal_tolerance: 0.25
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
-      time_steps: 30
-      model_dt: 0.1
-      batch_size: 1200
-      vx_max: 1.5
-      vx_min: 0.0
-      wz_max: 3.0
-      vy_max: 0.0
-      ax_max: 1.2              # 1.0 -> 1.2 (가속 반응 조금 더)
-      ax_min: -1.8             # -1.0 -> -1.8 (감속/정지 반응 개선)
-      ay_max: 0.0
-      ay_min: 0.0
-      az_min: 0.0
-      az_max: 3.0
-      vx_std: 0.25             # 0.2 -> 0.25
-      vy_std: 0.0
-      wz_std: 0.55  
-      iteration_count: 2
-      prune_distance: 1.5
-      transform_tolerance: 0.5
+      time_steps: 56
+      model_dt: 0.05
+      batch_size: 2000
+      vx_std: 0.2
+      vy_std: 0.2
+      wz_std: 0.4
+      vx_max: 0.5
+      vx_min: -0.35
+      vy_max: 0.5
+      wz_max: 1.9
+      ax_max: 3.0
+      ax_min: -3.0
+      ay_min: -3.0
+      ay_max: 3.0
+      az_max: 3.5
+      iteration_count: 1
       temperature: 0.3
-      gamma: 0.02
+      gamma: 0.015
       motion_model: "DiffDrive"
-      visualize: true
-      regenerate_noises: true
+      visualize: false
+      reset_period: 1.0 # (only in Humble)
+      regenerate_noises: false
       TrajectoryVisualizer:
         trajectory_step: 5
         time_step: 3
+      TrajectoryValidator:
+        plugin: "mppi::DefaultOptimalTrajectoryValidator"
+        collision_lookahead_time: 2.0
+        consider_footprint: false
       AckermannConstraints:
         min_turning_r: 0.2
-      critics: [
-        "ConstraintCritic", "CostCritic", "GoalCritic",
-        "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic",
-        "PathAngleCritic", "PreferForwardCritic"]
+      critics: ["ConstraintCritic", "CostCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
       ConstraintCritic:
         enabled: true
         cost_power: 1
@@ -148,11 +141,21 @@ controller_server:
         cost_power: 1
         cost_weight: 5.0
         threshold_to_consider: 0.5
+      # ObstaclesCritic:
+      #   enabled: true
+      #   cost_power: 1
+      #   repulsion_weight: 1.5
+      #   critical_weight: 20.0
+      #   consider_footprint: false
+      #   collision_cost: 10000.0
+      #   collision_margin_distance: 0.1
+      #   near_goal_distance: 0.5
+      #   inflation_radius: 0.55 # (only in Humble)
+      #   cost_scaling_factor: 10.0 # (only in Humble)
       CostCritic:
         enabled: true
         cost_power: 1
         cost_weight: 3.81
-        near_collision_cost: 253
         critical_cost: 300.0
         consider_footprint: false
         collision_cost: 1000000.0
@@ -181,6 +184,11 @@ controller_server:
         threshold_to_consider: 0.5
         max_angle_to_furthest: 1.0
         mode: 0
+      # VelocityDeadbandCritic:
+      #   enabled: true
+      #   cost_power: 1
+      #   cost_weight: 35.0
+      #   deadband_velocities: [0.05, 0.05, 0.05]
       # TwirlingCritic:
       #   enabled: true
       #   twirling_cost_power: 1
@@ -191,6 +199,7 @@ local_costmap:
     ros__parameters:
       update_frequency: 5.0
       publish_frequency: 2.0
+      transform_tolerance: 0.5
       global_frame: odom
       robot_base_frame: base_footprint
       rolling_window: true
@@ -198,31 +207,42 @@ local_costmap:
       height: 10
       resolution: 0.05
       robot_radius: 0.22
-      plugins: ["voxel_layer", "inflation_layer"]
+      plugins: ["obstacle_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
         inflation_radius: 0.70
-      voxel_layer:
-        plugin: "nav2_costmap_2d::VoxelLayer"
+      # voxel_layer:
+      #   plugin: "nav2_costmap_2d::VoxelLayer"
+      #   enabled: True
+      #   publish_voxel_map: True
+      #   origin_z: 0.0
+      #   z_resolution: 0.05
+      #   z_voxels: 16
+      #   max_obstacle_height: 2.0
+      #   mark_threshold: 0
+      #   observation_sources: scan
+      #   scan:
+      #     topic: scan
+      #     max_obstacle_height: 2.0
+      #     clearing: True
+      #     marking: True
+      #     data_type: "LaserScan"
+      #     raytrace_max_range: 3.0
+      #     raytrace_min_range: 0.0
+      #     obstacle_max_range: 2.5
+      #     obstacle_min_range: 0.0
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        publish_voxel_map: True
-        origin_z: 0.0
-        z_resolution: 0.05
-        z_voxels: 16
-        max_obstacle_height: 2.0
-        mark_threshold: 0
         observation_sources: scan
         scan:
           topic: scan
-          max_obstacle_height: 2.0
+          data_type: "LaserScan"
           clearing: True
           marking: True
-          data_type: "LaserScan"
           raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
           obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
@@ -233,6 +253,7 @@ global_costmap:
     ros__parameters:
       update_frequency: 1.0
       publish_frequency: 1.0
+      transform_tolerance: 0.5
       global_frame: map
       robot_base_frame: base_footprint
       robot_radius: 0.22
@@ -278,23 +299,30 @@ map_saver:
 
 planner_server:
   ros__parameters:
-    expected_planner_frequency: 5.0
     planner_plugins: ["GridBased"]
     costmap_update_timeout: 1.0
     GridBased:
       plugin: "nav2_navfn_planner::NavfnPlanner"
-      tolerance: 0.5
-      use_astar: false
+      tolerance: 1.0
+      use_astar: true
       allow_unknown: true
 
 smoother_server:
   ros__parameters:
+    costmap_topic: global_costmap/costmap_raw
+    footprint_topic: global_costmap/published_footprint
+    robot_base_frame: base_footprint
+    transform_tolerance: 0.1
     smoother_plugins: ["simple_smoother"]
     simple_smoother:
       plugin: "nav2_smoother::SimpleSmoother"
       tolerance: 1.0e-10
-      max_its: 1000
       do_refinement: True
+      refinement_num: 2
+      max_its: 1000
+      w_data: 0.2
+      w_smooth: 0.3
+      enforce_path_inversion: True
 
 behavior_server:
   ros__parameters:
@@ -317,11 +345,12 @@ behavior_server:
     local_frame: odom
     global_frame: map
     robot_base_frame: base_footprint
-    transform_tolerance: 0.5
+    transform_tolerance: 0.1
     simulate_ahead_time: 2.0
     max_rotational_vel: 1.0
     min_rotational_vel: 0.4
     rotational_acc_lim: 3.2
+    enable_stamped_cmd_vel: false
 
 waypoint_follower:
   ros__parameters:
@@ -360,16 +389,18 @@ route_server:
 velocity_smoother:
   ros__parameters:
     smoothing_frequency: 20.0
-    scale_velocities: False
+    scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [0.5, 0.0, 2.0]
-    min_velocity: [-0.5, 0.0, -2.0]
+    max_velocity: [2.5, 0.0, 3.2]
+    min_velocity: [-2.5, 0.0, -3.2]
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 1.0
     max_accel: [2.5, 0.0, 3.2]
     max_decel: [-2.5, 0.0, -3.2]
     odom_topic: "odom"
     odom_duration: 0.1
-    deadband_velocity: [0.0, 0.0, 0.0]
-    velocity_timeout: 1.0
+    use_realtime_priority: false
+    enable_stamped_cmd_vel: false
 
 collision_monitor:
   ros__parameters:
@@ -402,37 +433,37 @@ collision_monitor:
       max_height: 2.0
       enabled: True
 
-docking_server:
-  ros__parameters:
-    controller_frequency: 50.0
-    initial_perception_timeout: 5.0
-    wait_charge_timeout: 5.0
-    dock_approach_timeout: 30.0
-    undock_linear_tolerance: 0.05
-    undock_angular_tolerance: 0.1
-    max_retries: 3
-    base_frame: "base_footprint"
-    fixed_frame: "odom"
-    dock_backwards: false
-    dock_prestaging_tolerance: 0.5
+# docking_server:
+#   ros__parameters:
+#     controller_frequency: 50.0
+#     initial_perception_timeout: 5.0
+#     wait_charge_timeout: 5.0
+#     dock_approach_timeout: 30.0
+#     undock_linear_tolerance: 0.05
+#     undock_angular_tolerance: 0.1
+#     max_retries: 3
+#     base_frame: "base_footprint"
+#     fixed_frame: "odom"
+#     dock_backwards: false
+#     dock_prestaging_tolerance: 0.5
 
     # Types of docks
-    dock_plugins: ['simple_charging_dock']
-    simple_charging_dock:
-      plugin: 'opennav_docking::SimpleChargingDock'
-      docking_threshold: 0.05
-      staging_x_offset: -0.7
-      use_external_detection_pose: true
-      use_battery_status: false # true
-      use_stall_detection: false # true
+    # dock_plugins: ['simple_charging_dock']
+    # simple_charging_dock:
+    #   plugin: 'opennav_docking::SimpleChargingDock'
+    #   docking_threshold: 0.05
+    #   staging_x_offset: -0.7
+    #   use_external_detection_pose: true
+    #   use_battery_status: false # true
+    #   use_stall_detection: false # true
 
-      external_detection_timeout: 1.0
-      external_detection_translation_x: -0.18
-      external_detection_translation_y: 0.0
-      external_detection_rotation_roll: -1.57
-      external_detection_rotation_pitch: -1.57
-      external_detection_rotation_yaw: 0.0
-      filter_coef: 0.1
+    #   external_detection_timeout: 1.0
+    #   external_detection_translation_x: -0.18
+    #   external_detection_translation_y: 0.0
+    #   external_detection_rotation_roll: -1.57
+    #   external_detection_rotation_pitch: -1.57
+    #   external_detection_rotation_yaw: 0.0
+    #   filter_coef: 0.1
 
     # Dock instances
     # The following example illustrates configuring dock instances.
@@ -442,29 +473,29 @@ docking_server:
     #   frame: map
     #   pose: [0.0, 0.0, 0.0]
 
-    controller:
-      k_phi: 3.0
-      k_delta: 2.0
-      v_linear_min: 0.15
-      v_linear_max: 0.15
-      use_collision_detection: true
-      costmap_topic: "local_costmap/costmap_raw"
-      footprint_topic: "local_costmap/published_footprint"
-      transform_tolerance: 0.5
-      projection_time: 5.0
-      simulation_step: 0.1
-      dock_collision_threshold: 0.3
+    # controller:
+    #   k_phi: 3.0
+    #   k_delta: 2.0
+    #   v_linear_min: 0.15
+    #   v_linear_max: 0.15
+    #   use_collision_detection: true
+    #   costmap_topic: "local_costmap/costmap_raw"
+    #   footprint_topic: "local_costmap/published_footprint"
+    #   transform_tolerance: 0.5
+    #   projection_time: 5.0
+    #   simulation_step: 0.1
+    #   dock_collision_threshold: 0.3
 
-loopback_simulator:
-  ros__parameters:
-    base_frame_id: "base_footprint"
-    odom_frame_id: "odom"
-    map_frame_id: "map"
-    scan_frame_id: "base_scan"  # tb4_loopback_simulator.launch.py remaps to 'rplidar_link'
-    update_duration: 0.02
-    scan_range_min: 0.05
-    scan_range_max: 30.0
-    scan_angle_min: -3.1415
-    scan_angle_max: 3.1415
-    scan_angle_increment: 0.02617
-    scan_use_inf: true
+# loopback_simulator:
+#   ros__parameters:
+#     base_frame_id: "base_footprint"
+#     odom_frame_id: "odom"
+#     map_frame_id: "map"
+#     scan_frame_id: "base_scan"  # tb4_loopback_simulator.launch.py remaps to 'rplidar_link'
+#     update_duration: 0.02
+#     scan_range_min: 0.05
+#     scan_range_max: 30.0
+#     scan_angle_min: -3.1415
+#     scan_angle_max: 3.1415
+#     scan_angle_increment: 0.02617
+#     scan_use_inf: true
