@@ -39,4 +39,14 @@ ros2 launch amr_sim amr_simulator_launch.py
 ros2 launch amr_sim amr_hdl_localization_simulation.launch.py
 
 (Bringup for Merge, etc..)
-ros2 launch amr_sim amr_bringup_launch.py 
+ros2 launch amr_sim amr_bringup_launch.py
+```
+
+## 실행 방법(robot localization)
+```bash
+ros2 launch amr_sim amr_simulator_launch.py
+ros2 run robot_localization ekf_node --ros-args --params-file /root/ros2_ws/src/amr_sim/param/bcr_bot/ekf.yaml
+ros2 launch amr_sim slamtoolbox_localization_launch.py
+ros2 launch amr_sim amr_bringup_launch.py
+ros2 launch amr_sim amr_bringup_launch.py
+```
