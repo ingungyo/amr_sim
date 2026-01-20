@@ -47,7 +47,7 @@ def generate_launch_description():
     
     start_localization_slam_toolbox_node = LifecycleNode(
         parameters=[
-          slam_params_file_w_subst,
+          slam_params_file,
           {
             'use_lifecycle_manager': use_lifecycle_manager,
             'use_sim_time': use_sim_time
