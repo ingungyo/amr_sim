@@ -1,0 +1,40 @@
+ekf_filter_node:
+  ros__parameters:
+    use_sim_time: true
+    frequency: 30.0
+    sensor_timeout: 0.1
+    two_d_mode: true
+
+    # 프레임
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_footprint
+    world_frame: odom
+
+    # TF 출력
+    publish_tf: true
+    publish_acceleration: false
+    print_diagnostics: true
+
+    # 입력 토픽들
+    odom0: /odom
+    odom0_config: [true,  true,  false,
+                   false, false, true,
+                   false, false, false,
+                   false, false, true,
+                   false, false, false]
+    odom0_queue_size: 20
+    odom0_differential: false
+    odom0_relative: false
+
+    # IMU가 있으면 적극 권장 (없으면 아래 imu0 블록 삭제)
+    # imu0: /imu/data
+    # imu0_config: [false, false, false,
+    #               false, false, true,
+    #               false, false, false,
+    #               false, false, true,
+    #               true,  true,  false]
+    # imu0_queue_size: 50
+    # imu0_differential: false
+    # imu0_relative: false
+    # imu0_remove_gravitational_acceleration: true
