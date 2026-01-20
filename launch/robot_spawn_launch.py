@@ -129,7 +129,7 @@ def generate_launch_description():
 
     declare_odom_source = DeclareLaunchArgument(
         "odometry_source",
-        default_value="world",
+        default_value="encoders",
         description="odometry source for xacro (e.g., 'world', 'encoder', 'slam')",
     )
 
@@ -138,7 +138,7 @@ def generate_launch_description():
             "xacro ",
             description_file,
             " odometry_source:=", odometry_source,
-            " sim_ign:=true",
+            " sim_ign:=false",
         ]),
         value_type=str,
     )

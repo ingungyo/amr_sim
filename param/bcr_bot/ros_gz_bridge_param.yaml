@@ -14,10 +14,10 @@
   gz_type_name: "gz.msgs.Odometry"
   direction: "GZ_TO_ROS"
 
-- topic_name: "/tf"
-  ros_type_name: "tf2_msgs/msg/TFMessage"
-  gz_type_name: "gz.msgs.Pose_V"
-  direction: "GZ_TO_ROS"
+# - topic_name: "/tf"
+#   ros_type_name: "tf2_msgs/msg/TFMessage"
+#   gz_type_name: "gz.msgs.Pose_V"
+#   direction: "GZ_TO_ROS"
 
 # Laser Scan
 - topic_name: "/scan"
@@ -69,7 +69,7 @@
   direction: "GZ_TO_ROS"
 
 # Joint State
-- topic_name: "/world/default/model/bcr_bot/joint_state"
+- topic_name: "/joint_states"
   ros_type_name: "sensor_msgs/msg/JointState"
   gz_type_name: "gz.msgs.Model"
   direction: "GZ_TO_ROS"
