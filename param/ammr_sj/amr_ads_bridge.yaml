@@ -1,0 +1,226 @@
+ads_bridge_node:
+  ros__parameters:
+    # Simulation Mode (matching Python implementation)
+    simulate: false  # Set to true for simulation mode
+    
+    # Robot type configuration
+    # Supported types:
+    #   - "ammr_sj": 2-wheel configuration (FR=array[0], RL=array[1]) - FL and RR motors are not used
+    #   - "differential": Differential drive (typically FL=array[0], FR=array[1], no steering)
+    #   - "default": 4-wheel configuration (FL=array[0], FR=array[1], RL=array[2], RR=array[3])
+    # To add new robot types, modify get_robot_motor_config() in ads_bridge.cpp
+    robot: "ammr_sj"
+    
+    # PLC structure configuration
+    # Number of motors in PLC structure (may differ from ROS message array size)
+    # For ammr_sj: PLC sends 2 motors (FR, RL) in structure, ROS uses array[0]=FR, array[1]=RL
+    # For default: PLC sends 4 motors (FL, FR, RL, RR) in structure
+    plc_structure_num_drive_motors: 2      # Number of drive motors in PLC structure (2 for ammr_sj, 4 for default)
+    plc_structure_num_steering_motors: 2   # Number of steering motors in PLC structure (2 for ammr_sj, 4 for default)
+    
+    # ADS Connection Parameters 
+    plc:
+      ip: "192.168.10.151"  # PLC IP address
+      port: 851
+      ams_netid: "5.143.165.82.1.1"  # AMS NetId from test code
+      local_address: "192.168.10.66.1.1"  # Local AMS NetId (format: a.b.c.d.e.f)
+      
+    # Data rates (Hz) - matching Python implementation
+    control_loop_hz: 60.0      # Control loop at 60Hz (matching Python)
+    sensor_loop_hz: 60.0       # Sensor loop at 20Hz (matching Python)
+    
+    # Motor command write mode
+    use_motorcommand_struct: false  # true: write as structure (faster, requires PLC structure)
+                                    # false: write individual variables (slower, but compatible)
+    
+    # Zero-copy message optimization
+    use_zero_copy: false  # true: use zero-copy loaned messages (faster, but may not be supported by all middlewares)
+                         # false: use normal message allocation (compatible with all middlewares)
+    
+    # PLC Variable Names Configuration (based on Python implementation)
+    plc_variables:
+      # Battery variables (REAL type)
+      battery_voltage_top: "PLC_fVoltage"        # REAL
+      battery_current_top: "PLC_fCurrent"        # REAL
+      battery_soc_top: "PLC_fSOC"                # REAL
+      battery_soh_top: "PLC_fSOH"                # REAL
+      battery_voltage_bottom: "PLC_fVoltage"     # REAL (same as top for now)
+      battery_current_bottom: "PLC_fCurrent"     # REAL (same as top for now)
+      battery_soc_bottom: "PLC_fSOC"             # REAL (same as top for now)
+      battery_soh_bottom: "PLC_fSOH"             # REAL (same as top for now)
+      
+      # Safety sensors (BOOL type)
+      emergency_button: "PLC_bEmergency"         # BOOL
+      reset_button: "PLC_bResetBtn"              # BOOL (not in PLC spec, may not exist)
+      sto: "PLC_STO"                             # BOOL (corrected name)
+      charge_relay: "PLC_bChargeRelay"           # BOOL
+      charging_jack_state: "PLC_bChargingJackState"      # BOOL
+      battery_charging_state: "PLC_bBatteryChargingState" # BOOL
+      
+      # Sensor variables
+      bumper: "PLC_byBumperStatus"               # BYTE (not in PLC spec, may not exist)
+      motor_status: "PLC_iActualState"           # INT
+      
+      # Ultrasonic sensors (INT type) - based on PLC specification
+      ultrasonic_1: "PLC_iUltraSonic_FrontRight"     # INT
+      ultrasonic_2: "PLC_iUltraSonic_FrontLeft"      # INT  
+      ultrasonic_3: "PLC_iUltraSonic_RightFront"     # INT
+      ultrasonic_4: "PLC_iUltraSonic_RightBack"      # INT
+      ultrasonic_5: "PLC_iUltraSonic_BackRight"      # INT
+      ultrasonic_6: "PLC_iUltraSonic_BackLeft"       # INT
+      ultrasonic_7: "PLC_iUltraSonic_LeftBack"       # INT
+      ultrasonic_8: "PLC_iUltraSonic_LeftFront"      # INT
+      
+      # Additional ultrasonic sensors from PLC spec
+      ultrasonic_front: "PLC_iUltraSonic_Front"      # INT
+      ultrasonic_right: "PLC_iUltraSonic_Right"      # INT
+      ultrasonic_left: "PLC_iUltraSonic_Left"        # INT
+      ultrasonic_rear: "PLC_iUltraSonic_Rear"        # INT
+      
+      # Load cell sensors (REAL type)
+      loadcell_fl: "PLC_fLoadcell_FrontLeft"         # REAL
+      loadcell_fr: "PLC_fLoadcell_FrontRight"        # REAL
+      loadcell_rl: "PLC_fLoadcell_RearLeft"          # REAL
+      loadcell_rr: "PLC_fLoadcell_RearRight"         # REAL
+      
+      # Control variables (correct types)
+      cmd_vel_linear: "PLC_fTargetLinearVel"     # REAL
+      cmd_vel_angular: "PLC_fTargetAngularVel"   # REAL
+      state_machine: "PLC_iTargetState"          # INT (16-bit)
+      encoder_linear: "PLC_fActualLinearVel"     # REAL
+      encoder_angular: "PLC_fActualAngularVel"   # REAL
+      
+      # HDL Localization pose variables (Float32 - 4 Bytes each)
+      hdl_pose_x: "PLC_fHDLPoseX"      # Robot's current x position from HDL localization
+      hdl_pose_y: "PLC_fHDLPoseY"      # Robot's current y position from HDL localization  
+      hdl_pose_yaw: "PLC_fHDLPoseYaw"  # Robot's current yaw angle in radians (counter-clockwise +3.141592, clockwise -3.141592)
+      motor_encoders: "GVL.MotorEnc"
+      motor_commands: "GVL.MotorCmd"
+      ##################################################
+      # MOTOR READ VARIABLES (PLC -> ROS)
+      ##################################################
+
+      # Drive Motor - Front Left (FL) - with PLC types
+      drive_fl_actual_pos: "PLC_iDriveMotor_FL_ActualPos"                   # DINT
+      drive_fl_actual_vel: "PLC_iDriveMotor_FL_ActualVel"                   # DINT
+      drive_fl_error_code: "PLC_iDriveMotor_FL_ErrorCode"                   # UINT
+      drive_fl_mode_of_operation_display: "PLC_iDriveMotor_FL_ModeOfOperationDisplay" # SINT
+      drive_fl_status_word: "PLC_iDriveMotor_FL_StatusWord"                 # UINT
+      drive_fl_current: "PLC_iDriveMotor_FL_Current"                        # INT
+
+      # Drive Motor - Front Right (FR)
+      drive_fr_actual_pos: "PLC_iDriveMotor_FR_ActualPos"
+      drive_fr_actual_vel: "PLC_iDriveMotor_FR_ActualVel"
+      drive_fr_error_code: "PLC_iDriveMotor_FR_ErrorCode"
+      drive_fr_mode_of_operation_display: "PLC_iDriveMotor_FR_ModeOfOperationDisplay"
+      drive_fr_status_word: "PLC_iDriveMotor_FR_StatusWord"
+      drive_fr_current: "PLC_iDriveMotor_FR_Current"
+
+      # Drive Motor - Rear Left (RL)
+      drive_rl_actual_pos: "PLC_iDriveMotor_RL_ActualPos"
+      drive_rl_actual_vel: "PLC_iDriveMotor_RL_ActualVel"
+      drive_rl_error_code: "PLC_iDriveMotor_RL_ErrorCode"
+      drive_rl_mode_of_operation_display: "PLC_iDriveMotor_RL_ModeOfOperationDisplay"
+      drive_rl_status_word: "PLC_iDriveMotor_RL_StatusWord"
+      drive_rl_current: "PLC_iDriveMotor_RL_Current"
+
+      # Drive Motor - Rear Right (RR)
+      drive_rr_actual_pos: "PLC_iDriveMotor_RR_ActualPos"
+      drive_rr_actual_vel: "PLC_iDriveMotor_RR_ActualVel"
+      drive_rr_error_code: "PLC_iDriveMotor_RR_ErrorCode"
+      drive_rr_mode_of_operation_display: "PLC_iDriveMotor_RR_ModeOfOperationDisplay"
+      drive_rr_status_word: "PLC_iDriveMotor_RR_StatusWord"
+      drive_rr_current: "PLC_iDriveMotor_RR_Current"
+
+      # Steering Motor - Front Left (FL)
+      steering_fl_actual_pos: "PLC_iSteeringMotor_FL_ActualPos"
+      steering_fl_actual_vel: "PLC_iSteeringMotor_FL_ActualVel"
+      steering_fl_error_code: "PLC_iSteeringMotor_FL_ErrorCode"
+      steering_fl_mode_of_operation_display: "PLC_iSteeringMotor_FL_ModeOfOperationDisplay"
+      steering_fl_status_word: "PLC_iSteeringMotor_FL_StatusWord"
+      steering_fl_current: "PLC_iSteeringMotor_FL_Current"
+
+      # Steering Motor - Front Right (FR)
+      steering_fr_actual_pos: "PLC_iSteeringMotor_FR_ActualPos"
+      steering_fr_actual_vel: "PLC_iSteeringMotor_FR_ActualVel"
+      steering_fr_error_code: "PLC_iSteeringMotor_FR_ErrorCode"
+      steering_fr_mode_of_operation_display: "PLC_iSteeringMotor_FR_ModeOfOperationDisplay"
+      steering_fr_status_word: "PLC_iSteeringMotor_FR_StatusWord"
+      steering_fr_current: "PLC_iSteeringMotor_FR_Current"
+
+      # Steering Motor - Rear Left (RL)
+      steering_rl_actual_pos: "PLC_iSteeringMotor_RL_ActualPos"
+      steering_rl_actual_vel: "PLC_iSteeringMotor_RL_ActualVel"
+      steering_rl_error_code: "PLC_iSteeringMotor_RL_ErrorCode"
+      steering_rl_mode_of_operation_display: "PLC_iSteeringMotor_RL_ModeOfOperationDisplay"
+      steering_rl_status_word: "PLC_iSteeringMotor_RL_StatusWord"
+      steering_rl_current: "PLC_iSteeringMotor_RL_Current"
+
+      # Steering Motor - Rear Right (RR)
+      steering_rr_actual_pos: "PLC_iSteeringMotor_RR_ActualPos"
+      steering_rr_actual_vel: "PLC_iSteeringMotor_RR_ActualVel"
+      steering_rr_error_code: "PLC_iSteeringMotor_RR_ErrorCode"
+      steering_rr_mode_of_operation_display: "PLC_iSteeringMotor_RR_ModeOfOperationDisplay"
+      steering_rr_status_word: "PLC_iSteeringMotor_RR_StatusWord"
+      steering_rr_current: "PLC_iSteeringMotor_RR_Current"
+
+
+      ##################################################
+      # MOTOR WRITE VARIABLES (ROS -> PLC)
+      ##################################################
+
+      # Drive Motor - Front Left (FL) WRITE variables
+      drive_fl_control_word: "PLC_iDriveMotor_FL_ControlWord"              # UINT
+      drive_fl_max_motor_speed: "PLC_iDriveMotor_FL_MaxMotorSpeed"          # INT
+      drive_fl_modes_of_operation: "PLC_iDriveMotor_FL_ModesOfOperation"    # SINT
+      drive_fl_target_pos: "PLC_iDriveMotor_FL_TargetPos"                   # DINT
+      drive_fl_target_vel: "PLC_iDriveMotor_FL_TargetVel"                   # DINT
+
+      # Drive Motor - Front Right (FR)
+      drive_fr_control_word: "PLC_iDriveMotor_FR_ControlWord"
+      drive_fr_max_motor_speed: "PLC_iDriveMotor_FR_MaxMotorSpeed"
+      drive_fr_modes_of_operation: "PLC_iDriveMotor_FR_ModesOfOperation"
+      drive_fr_target_pos: "PLC_iDriveMotor_FR_TargetPos"
+      drive_fr_target_vel: "PLC_iDriveMotor_FR_TargetVel"
+
+      # Drive Motor - Rear Left (RL)
+      drive_rl_control_word: "PLC_iDriveMotor_RL_ControlWord"
+      drive_rl_max_motor_speed: "PLC_iDriveMotor_RL_MaxMotorSpeed"
+      drive_rl_modes_of_operation: "PLC_iDriveMotor_RL_ModesOfOperation"
+      drive_rl_target_pos: "PLC_iDriveMotor_RL_TargetPos"
+      drive_rl_target_vel: "PLC_iDriveMotor_RL_TargetVel"
+
+      # Drive Motor - Rear Right (RR)
+      drive_rr_control_word: "PLC_iDriveMotor_RR_ControlWord"
+      drive_rr_max_motor_speed: "PLC_iDriveMotor_RR_MaxMotorSpeed"
+      drive_rr_modes_of_operation: "PLC_iDriveMotor_RR_ModesOfOperation"
+      drive_rr_target_pos: "PLC_iDriveMotor_RR_TargetPos"
+      drive_rr_target_vel: "PLC_iDriveMotor_RR_TargetVel"
+
+      # Steering Motor - Front Left (FL)
+      steering_fl_control_word: "PLC_iSteeringMotor_FL_ControlWord"
+      steering_fl_max_motor_speed: "PLC_iSteeringMotor_FL_MaxMotorSpeed"
+      steering_fl_modes_of_operation: "PLC_iSteeringMotor_FL_ModesOfOperation"
+      steering_fl_target_pos: "PLC_iSteeringMotor_FL_TargetPos"
+      steering_fl_target_vel: "PLC_iSteeringMotor_FL_TargetVel"
+
+      # Steering Motor - Front Right (FR)
+      steering_fr_control_word: "PLC_iSteeringMotor_FR_ControlWord"
+      steering_fr_max_motor_speed: "PLC_iSteeringMotor_FR_MaxMotorSpeed"
+      steering_fr_modes_of_operation: "PLC_iSteeringMotor_FR_ModesOfOperation"
+      steering_fr_target_pos: "PLC_iSteeringMotor_FR_TargetPos"
+      steering_fr_target_vel: "PLC_iSteeringMotor_FR_TargetVel"
+
+      # Steering Motor - Rear Left (RL)
+      steering_rl_control_word: "PLC_iSteeringMotor_RL_ControlWord"
+      steering_rl_max_motor_speed: "PLC_iSteeringMotor_RL_MaxMotorSpeed"
+      steering_rl_modes_of_operation: "PLC_iSteeringMotor_RL_ModesOfOperation"
+      steering_rl_target_pos: "PLC_iSteeringMotor_RL_TargetPos"
+      steering_rl_target_vel: "PLC_iSteeringMotor_RL_TargetVel"
+
+      # Steering Motor - Rear Right (RR)
+      steering_rr_control_word: "PLC_iSteeringMotor_RR_ControlWord"
+      steering_rr_max_motor_speed: "PLC_iSteeringMotor_RR_MaxMotorSpeed"
+      steering_rr_modes_of_operation: "PLC_iSteeringMotor_RR_ModesOfOperation"
+      steering_rr_target_pos: "PLC_iSteeringMotor_RR_TargetPos"
+      steering_rr_target_vel: "PLC_iSteeringMotor_RR_TargetVel"

@@ -1,0 +1,46 @@
+swerve_controller:
+  ros__parameters:
+
+    robot_base_frame: base_footprint        # TODO: 실제 로봇 base frame (예: base_link)
+
+    twist_topic: cmd_vel             # TODO: 실제 cmd_vel 토픽 이름
+
+    # Additional topics
+    odom_topic: /wheel_odom
+    
+    cycle_fequency: 20
+
+    motor_command_topic: /motor_command
+    motor_feedback_topic: /motor_feedback
+    steering_angle_limit_degrees: 100.0
+
+        # Motor / encoder scaling (was hard-coded in swerve_controller_node.hpp)
+    motor_scaling:
+      drive_gear_ratio: 21.0
+      steering_rotation_ratio: 152.0
+      # steering_pulses_per_rev: 8388608
+      steering_pulses_per_rev: 4194304
+
+    robot_geometry:
+      wheel_base: 0.728 # The distance between the front and rear steering axles (meters)
+      wheel_track: 0.274 # The distance between the left and right steering axles (meters)
+      wheel_radius: 0.15 # The radius of the drive wheels (meters)
+      wheel_width: 0.05 # The width of the drive wheels (meters)
+
+    # Drive module specific parameters
+    drive_modules:
+      right_front:
+        steering_motor_maximum_velocity: 1.57
+        steering_motor_minimum_acceleration: 0.1
+        steering_motor_maximum_acceleration: 1.57
+        drive_motor_maximum_velocity: 1.6
+        drive_motor_minimum_acceleration: 0.1
+        drive_motor_maximum_acceleration: 1.6
+      left_rear:
+        steering_motor_maximum_velocity: 1.57
+        steering_motor_minimum_acceleration: 0.1
+        steering_motor_maximum_acceleration: 1.57
+        drive_motor_maximum_velocity: 1.6
+        drive_motor_minimum_acceleration: 0.1
+        drive_motor_maximum_acceleration: 1.6
+
