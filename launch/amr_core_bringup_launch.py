@@ -44,6 +44,9 @@ def generate_launch_description():
     use_docking = LaunchConfiguration('use_docking')
     use_interface = LaunchConfiguration('use_interface')
     use_pointcloud_merger = LaunchConfiguration('use_pointcloud_merger')
+    robot_type = LaunchConfiguration('robot_type')
+    nav_param_file = LaunchConfiguration('nav_param_file')
+    slam_param_file = LaunchConfiguration('slam_param_file')
 
 
     declare_amr_bringup_dir_cmd = DeclareLaunchArgument(
@@ -147,8 +150,23 @@ def generate_launch_description():
     )
 
     declare_use_pointcloud_merger_cmd = DeclareLaunchArgument(
-        'use_interface', default_value='true',
+        'use_pointcloud_merger', default_value='false',
         description='Whether to launch pointcloud merger nodes'
+    )
+
+    declare_robot_type_cmd = DeclareLaunchArgument(
+        'robot_type', default_value='HAMR',
+        description='Robot type (HAMR, AMMR_SJ, AMMR20)'
+    )
+
+    declare_nav_param_file_cmd = DeclareLaunchArgument(
+        'nav_param_file', default_value='',
+        description='Navigation parameter file path'
+    )
+
+    declare_slam_param_file_cmd = DeclareLaunchArgument(
+        'slam_param_file', default_value='',
+        description='SLAM parameter file path'
     )
 
     state_publisher_launch = IncludeLaunchDescription(
@@ -218,6 +236,9 @@ def generate_launch_description():
             'use_sim_time': use_sim_time,
             'param_dir': param_dir,
             'param_filename': interface_param_filename,
+            'robot_type': robot_type,
+            'nav_param_file': nav_param_file,
+            'slam_param_file': slam_param_file,
         }.items(),
         condition=IfCondition(use_interface)
     )
@@ -286,6 +307,9 @@ def generate_launch_description():
     ld.add_action(declare_use_docking_cmd)
     ld.add_action(declare_use_interface_cmd)
     ld.add_action(declare_use_pointcloud_merger_cmd)
+    ld.add_action(declare_robot_type_cmd)
+    ld.add_action(declare_nav_param_file_cmd)
+    ld.add_action(declare_slam_param_file_cmd)
 
     ld.add_action(bringup_group)
 

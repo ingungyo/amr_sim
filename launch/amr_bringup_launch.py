@@ -15,13 +15,33 @@ def check_param_file(context, *args, **kwargs):
         raise FileNotFoundError(f"[Launch] Parameter file not found: {params_path}")
     return []
 
+def get_robot_model_prefix(context, *args, **kwargs):
+    """Get amr_model prefix based on robot_type"""
+    robot_type_value = LaunchConfiguration('robot_type').perform(context)
+    
+    if robot_type_value == "HAMR":
+        return 'hamr/'
+    elif robot_type_value == "AMMR_SJ":
+        return 'ammr_sj/'
+    elif robot_type_value == "AMMR20":
+        return 'ammr20/'
+    else:
+        # Default
+        return 'bcr_bot/'
+
 
 def generate_launch_description():
     amr_bringup_dir = get_package_share_directory('amr_sim')
 
-    robot_description_dir = PathJoinSubstitution([amr_bringup_dir, 'description', 'hamr'])
-    amr_bringup_launch_file_dir = os.path.join(amr_bringup_dir, "launch")
     amr_model = 'bcr_bot/' # default = 'default/' ex)ammr = 'ammr/'
+
+    robot_description_dir = PathJoinSubstitution([amr_bringup_dir, 'description', amr_model])
+    amr_bringup_launch_file_dir = os.path.join(amr_bringup_dir, "launch")
+    
+    # Robot type configuration (추가된 인자)
+    robot_type = LaunchConfiguration('robot_type')
+    
+    # 기존 파라미터 파일명들 (amr_model 기반)
     core_param_filename = amr_model + 'amr_core_param.yaml'
     docking_param_filename = amr_model + 'amr_docking_param.yaml'
     interface_param_filename = amr_model + 'amr_interface_param.yaml'
@@ -33,6 +53,10 @@ def generate_launch_description():
 
     navigation_param_filename = amr_model + 'nav2_params.yaml'
     navigation_map_filename = 'test_sh.yaml'
+    
+    # Interface에서 사용할 파라미터 파일 경로들 (LaunchConfiguration)
+    nav_param_file = LaunchConfiguration('nav_param_file')
+    slam_param_file = LaunchConfiguration('slam_param_file')
 
     namespace = LaunchConfiguration('namespace')
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -74,6 +98,68 @@ def generate_launch_description():
         description='Use AMCL if true',
     )
 
+    declare_robot_type_cmd = DeclareLaunchArgument(
+        'robot_type', default_value='AMMR_SJ',
+        description='Robot type (HAMR, AMMR_SJ, AMMR20)',
+    )
+
+    declare_core_param_filename_cmd = DeclareLaunchArgument(
+        'core_param_filename', default_value=core_param_filename,
+        description='Core parameter filename',
+    )
+
+    declare_docking_param_filename_cmd = DeclareLaunchArgument(
+        'docking_param_filename', default_value=docking_param_filename,
+        description='Docking parameter filename',
+    )
+
+    declare_interface_param_filename_cmd = DeclareLaunchArgument(
+        'interface_param_filename', default_value=interface_param_filename,
+        description='Interface parameter filename',
+    )
+
+    declare_front_lidar_param_filename_cmd = DeclareLaunchArgument(
+        'front_lidar_param_filename', default_value=front_lidar_param_filename,
+        description='Front lidar parameter filename',
+    )
+
+    declare_rear_lidar_param_filename_cmd = DeclareLaunchArgument(
+        'rear_lidar_param_filename', default_value=rear_lidar_param_filename,
+        description='Rear lidar parameter filename',
+    )
+
+    declare_lidar_merger_param_filename_cmd = DeclareLaunchArgument(
+        'lidar_merger_param_filename', default_value=lidar_merger_param_filename,
+        description='Lidar merger parameter filename',
+    )
+
+    declare_pointcloud_merger_param_filename_cmd = DeclareLaunchArgument(
+        'pointcloud_merger_param_filename', default_value=pointcloud_merger_param_filename,
+        description='Pointcloud merger parameter filename',
+    )
+
+    declare_robot_description_filename_cmd = DeclareLaunchArgument(
+        'robot_description_filename', default_value=robot_description_filename,
+        description='Robot description filename',
+    )
+
+    declare_navigation_param_filename_cmd = DeclareLaunchArgument(
+        'navigation_param_filename', default_value=navigation_param_filename,
+        description='Navigation parameter filename',
+    )
+
+    declare_nav_param_file_cmd = DeclareLaunchArgument(
+        'nav_param_file', 
+        default_value=os.path.join(amr_bringup_dir, 'param', navigation_param_filename),
+        description='Navigation parameter file path for interface',
+    )
+
+    declare_slam_param_file_cmd = DeclareLaunchArgument(
+        'slam_param_file', 
+        default_value=os.path.join(amr_bringup_dir, 'param', amr_model + 'slam_params.yaml'),
+        description='SLAM parameter file path for interface',
+    )
+
     check_param_file_action = OpaqueFunction(function=check_param_file)
 
     amr_core_bringup_include = IncludeLaunchDescription(
@@ -84,22 +170,25 @@ def generate_launch_description():
             'use_sim_time': use_sim_time,
             'namespace': namespace,
             'amr_bringup_dir': amr_bringup_dir,
-            'core_param_filename': core_param_filename,
-            'docking_marker_param_filename': docking_param_filename,
-            'interface_param_filename': interface_param_filename,
-            'front_lidar_param_filename': front_lidar_param_filename,
-            'rear_lidar_param_filename': rear_lidar_param_filename,
-            'lidar_merger_param_filename': lidar_merger_param_filename,
-            'pointcloud_merger_param_filename': pointcloud_merger_param_filename,
+            'robot_type': robot_type,
+            'core_param_filename': LaunchConfiguration('core_param_filename'),
+            'docking_marker_param_filename': LaunchConfiguration('docking_param_filename'),
+            'interface_param_filename': LaunchConfiguration('interface_param_filename'),
+            'front_lidar_param_filename': LaunchConfiguration('front_lidar_param_filename'),
+            'rear_lidar_param_filename': LaunchConfiguration('rear_lidar_param_filename'),
+            'lidar_merger_param_filename': LaunchConfiguration('lidar_merger_param_filename'),
+            'pointcloud_merger_param_filename': LaunchConfiguration('pointcloud_merger_param_filename'),
             'robot_description_dir': robot_description_dir,
-            'robot_description_filename': robot_description_filename,
+            'robot_description_filename': LaunchConfiguration('robot_description_filename'),
+            'nav_param_file': nav_param_file,
+            'slam_param_file': slam_param_file,
             'use_state_publisher': 'false',
             'use_dual_lidar': 'false',
             'use_lidar_merger': 'false',
             'use_pointcloud_merger': 'false',
             'use_core': 'false',
             'use_docking': 'false',
-            'use_interface': 'false',
+            'use_interface': 'true',
         }.items(),
     )
 
@@ -125,8 +214,20 @@ def generate_launch_description():
     ld.add_action(declare_map_cmd)
     ld.add_action(declare_use_localization_cmd)
     ld.add_action(declare_use_amcl_cmd)
+    ld.add_action(declare_robot_type_cmd)
+    ld.add_action(declare_core_param_filename_cmd)
+    ld.add_action(declare_docking_param_filename_cmd)
+    ld.add_action(declare_interface_param_filename_cmd)
+    ld.add_action(declare_front_lidar_param_filename_cmd)
+    ld.add_action(declare_rear_lidar_param_filename_cmd)
+    ld.add_action(declare_lidar_merger_param_filename_cmd)
+    ld.add_action(declare_pointcloud_merger_param_filename_cmd)
+    ld.add_action(declare_robot_description_filename_cmd)
+    ld.add_action(declare_navigation_param_filename_cmd)
+    ld.add_action(declare_nav_param_file_cmd)
+    ld.add_action(declare_slam_param_file_cmd)
     ld.add_action(check_param_file_action)
     ld.add_action(amr_core_bringup_include)
-    ld.add_action(amr_nav_bringup_include)
+    # ld.add_action(amr_nav_bringup_include)
 
     return ld
