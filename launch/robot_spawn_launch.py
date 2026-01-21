@@ -23,7 +23,7 @@ def get_xacro_to_doc(xacro_file_path, mappings):
 def generate_launch_description():
    
     sim_pkg_dir = get_package_share_directory("amr_sim")
-    # swerve_controller_dir = get_package_share_directory("swerve_controller")
+    # swerve_controller_dir = get_package_share_directory("amr_san")
     # swerve_controller_dir = get_package_share_directory("zinger_swerve_controller_cpp")
 
     use_sim_time = LaunchConfiguration("use_sim_time")
@@ -137,8 +137,8 @@ def generate_launch_description():
         Command([
             "xacro ",
             description_file,
-            " odometry_source:=", odometry_source,
-            " sim_ign:=false",
+            # " odometry_source:=", odometry_source,
+            # " sim_ign:=false",
         ]),
         value_type=str,
     )
@@ -182,29 +182,48 @@ def generate_launch_description():
         }]
     )
 
-    ##########################TODO##########################################
-    ## select controller ###################################################
-    # controller_launch = IncludeLaunchDescription(
-    #     PythonLaunchDescriptionSource(
-    #         PathJoinSubstitution([sim_pkg_dir, 'launch',
-    #                               'swerve_controllers.launch.py'])
-    #     ),
-    #     launch_arguments={
-    #         'use_sim_time': use_sim_time,
-    #     }.items()
-    # )
+    #########################TODO##########################################
+    # select controller ###################################################
+    controller_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([sim_pkg_dir, 'launch',
+                                  'swerve_controllers_launch.py'])
+        ),
+        launch_arguments={
+            'use_sim_time': use_sim_time,
+        }.items()
+    )
 
+    swerve_controller_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([sim_pkg_dir, 'launch',
+                                  'swerve_controller_cpp_launch.py'])
+        ),
+        launch_arguments={
+            'use_sim_time': use_sim_time,
+            'param_file': PathJoinSubstitution([sim_pkg_dir, 'param', robot_model, 'amr_swerve_controller.yaml'])
+        }.items()
+    )
+    # amr_core_dir = get_package_share_directory('amr_core')
+    # SWERVE_CONTROLLER_PARAM_FILE = 'amr_swerve_controller.yaml' 
+    
+    # swerve_controller_param_file = LaunchConfiguration('swerve_controller_param_file')
+    
+    # declare_swerve_controller_param_file_cmd = DeclareLaunchArgument('swerve_controller_param_file', 
+    #     default_value=PathJoinSubstitution([sim_pkg_dir, 'param', robot_model, SWERVE_CONTROLLER_PARAM_FILE]),
+    #     description='Swerve controller param file path')
+    
     # swerve_controller_launch = IncludeLaunchDescription(
     #     PythonLaunchDescriptionSource(
-    #         PathJoinSubstitution([swerve_controller_dir, 'launch',
-    #                               'swerve_controller_cpp.launch.py'])
+    #         PathJoinSubstitution([amr_core_dir, 'launch',
+    #                               'swerve_controller_sj_cpp.launch.py'])
     #     ),
     #     launch_arguments={
     #         'use_sim_time': use_sim_time,
-    #         'param_file': PathJoinSubstitution([sim_pkg_dir, 'param', robot_model, 'swerve_controller.yaml'])
+    #         'param_file': swerve_controller_param_file
     #     }.items()
     # )
-    ########################################################################
+    #######################################################################
 
 
 
@@ -284,8 +303,13 @@ def generate_launch_description():
     ld.add_action(robot_state_publisher)
     ld.add_action(gz_spawn_entity)
     ld.add_action(gz_ros2_bridge)
-    # ld.add_action(controller_launch)
-    # ld.add_action(swerve_controller_launch)
+    ld.add_action(controller_launch)
+    
+    # ld.add_action(declare_swerve_controller_param_file_cmd)
+    ld.add_action(swerve_controller_launch)
+    
+    
+    
     return ld
 
 
