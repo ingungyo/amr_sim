@@ -1,13 +1,6 @@
 <?xml version="1.0" ?>
-<robot name="ammr_sj" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+<robot name="zinger" xmlns:xacro="http://www.ros.org/wiki/xacro" >
 
-    <!--
-        GAZEBO MACROS
-    -->
-    <!--
-        Define Gazebo specific macro's here because this file isn't included if we're not running
-        Gazebo
-    -->
     <xacro:macro name="gazebo_reference_link_wheel" params="name">
         <gazebo reference="link_wheel_${name}">
             <mu1>0.9</mu1>
@@ -21,76 +14,23 @@
         </gazebo>
     </xacro:macro>
 
-    <xacro:macro name="gazebo_reference_caster_wheel" params="name">
-        <gazebo reference="link_caster_${name}">
-            <mu1>0.9</mu1>
-            <mu2>0.9</mu2>
-            <kp>500000.0</kp>
-            <kd>10.0</kd>
-            <minDepth>0.001</minDepth>
-            <maxVel>0.1</maxVel>
-            <fdir1>1 0 0</fdir1>
-            <selfCollide>true</selfCollide>
-        </gazebo>
-    </xacro:macro>
-
     <!-- Sensors -->
-
-    <xacro:macro name="gazebo_sensor_imu" params="name update_rate:=25" >
-        <gazebo reference="${name}">
+    <xacro:macro name="gazebo_sensor_imu" params="name update_rate:=100">
+        <gazebo reference="link_sensor_imu_${name}">
             <sensor name="${name}" type="imu">
-                <gz_frame_id>${name}</gz_frame_id>
                 <always_on>true</always_on>
                 <update_rate>${update_rate}</update_rate>
-                <imu>
-                    <angular_velocity>
-                    <x>
-                        <noise type="gaussian">
-                        <mean>0.0</mean>
-                        <stddev>0.0</stddev>
-                        </noise>
-                    </x>
-                    <y>
-                        <noise type="gaussian">
-                        <mean>0.0</mean>
-                        <stddev>0.0</stddev>
-                        </noise>
-                    </y>
-                    <z>
-                        <noise type="gaussian">
-                        <mean>0.0</mean>
-                        <stddev>0.0</stddev>
-                        </noise>
-                    </z>
-                    </angular_velocity>
-                    <linear_acceleration>
-                    <x>
-                        <noise type="gaussian">
-                        <mean>0.0</mean>
-                        <stddev>0.0</stddev>
-                        </noise>
-                    </x>
-                    <y>
-                        <noise type="gaussian">
-                        <mean>0.0</mean>
-                        <stddev>0.0</stddev>
-                        </noise>
-                    </y>
-                    <z>
-                        <noise type="gaussian">
-                        <mean>0.0</mean>
-                        <stddev>0.0</stddev>
-                        </noise>
-                    </z>
-                    </linear_acceleration>
-                </imu>
+                <gz_frame_id>link_sensor_imu_${name}</gz_frame_id>
+                <!-- gz transport topic 이름 (ROS2 토픽 아님) -->
+                <topic>imu</topic>
+
                 <plugin
-                        filename="gz-sim-imu-system"
-                        name="gz::sim::systems::Imu">
+                    filename="gz-sim-imu-system"
+                    name="gz::sim::systems::Imu">
                     <alwaysOn>true</alwaysOn>
-                    <updateRate>25</updateRate>
+                    <updateRate>${update_rate}</updateRate>
                     <topic>imu</topic>
-                    <imuName>imu_center</imuName>
+                    <imuName>${name}</imuName>
                 </plugin>
             </sensor>
         </gazebo>
@@ -100,71 +40,70 @@
         </gazebo>
     </xacro:macro>
 
-    <xacro:macro name="gazebo_sensor_lidar" params="name topic_name" >
-        <gazebo reference="${name}">
+    <xacro:macro name="gazebo_sensor_lidar" params="name reference_link topic">
+        <gazebo reference="${reference_link}">
             <sensor name="${name}" type="gpu_lidar">
                 <pose>0 0 0.02 0 0 0</pose>
                 <always_on>true</always_on>
-                <topic>${topic_name}</topic>
-                <update_rate>30</update_rate>
+                <topic>${topic}</topic>
+                <update_rate>20</update_rate>
                 <lidarName>${name}</lidarName>
                 <visualize>true</visualize>
-                <gz_frame_id>${name}</gz_frame_id>
+                <gz_frame_id>${reference_link}</gz_frame_id>
                 <lidar>
                     <scan>
-                        <horizontal>
-                            <samples>640</samples>
-                            <resolution>1.0</resolution>
-                            <min_angle>${-pi}</min_angle>
-                            <max_angle>${pi}</max_angle>
-                        </horizontal>
+                    <horizontal>
+                        <samples>1440</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-2.35619</min_angle>
+                        <max_angle>2.35619</max_angle>
+                    </horizontal>
                     </scan>
                     <range>
-                        <min>0.55</min>
-                        <max>16.0</max>
-                        <resolution>0.01</resolution>
+                    <min>0.05</min>
+                    <max>40.0</max>
+                    <resolution>0.01</resolution>
                     </range>
+                    <noise>
+                    <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.01</stddev>
+                    </noise>
                 </lidar>
-                <plugin
-                    filename="gz-sim-sensors-system"
-                    name="gz::sim::systems::Sensors">
-                    <render_engine>ogre2</render_engine>
-                </plugin>
             </sensor>
+        </gazebo>
+
+        <gazebo reference="joint_body_to_sensor_lidar_${name}">
+            <preserveFixedJoint>true</preserveFixedJoint>
         </gazebo>
     </xacro:macro>
 
-    <!--
-        GAZEBO
-    -->
-    <!-- Motorized wheels -->
-    <xacro:gazebo_reference_link_wheel name="right_front" />
+    <xacro:gazebo_reference_link_wheel name="left_front" />
     <xacro:gazebo_reference_link_wheel name="left_rear" />
-    
-    <!-- Caster wheels -->
-    <xacro:gazebo_reference_caster_wheel name="left_front" />
-    <xacro:gazebo_reference_caster_wheel name="right_rear" />
+    <xacro:gazebo_reference_link_wheel name="right_rear" />
+    <xacro:gazebo_reference_link_wheel name="right_front" />
 
-    <xacro:gazebo_sensor_imu name="imu_frame" />
-    <xacro:gazebo_sensor_lidar name="lidar_front" topic_name="/scan_front" />
-    <xacro:gazebo_sensor_lidar name="lidar_back" topic_name="/scan_rear" />
+    <xacro:gazebo_sensor_imu name="center" />
 
-    
+    <xacro:gazebo_sensor_lidar name="lidar_front" reference_link="lidar_front" topic="/scan_front"/>
+    <xacro:gazebo_sensor_lidar name="lidar_back"  reference_link="lidar_back"  topic="/scan_rear"/>
 
     <gazebo>
+        <plugin filename="gz-sim-sensors-system"
+                name="gz::sim::systems::Sensors">
+            <render_engine>ogre2</render_engine>
+        </plugin>
+
         <plugin filename="gz-sim-joint-state-publisher-system"
                 name="gz::sim::systems::JointStatePublisher">
         </plugin>
-        
-        <plugin
-                filename="gz_ros2_control-system"
+
+        <plugin filename="gz_ros2_control-system"
                 name="gz_ros2_control::GazeboSimROS2ControlPlugin">
             <parameters>${param_file}</parameters>
         </plugin>
-    </gazebo>
-    <!-- <gazebo>
-         <plugin
-                filename="gz-sim-pose-publisher-system"
+
+        <!-- <plugin filename="gz-sim-pose-publisher-system"
                 name="gz::sim::systems::PosePublisher">
             <publish_link_pose>true</publish_link_pose>
             <publish_sensor_pose>true</publish_sensor_pose>
@@ -175,6 +114,16 @@
             <use_pose_vector_msg>true</use_pose_vector_msg>
             <static_publisher>true</static_publisher>
             <static_update_frequency>-1</static_update_frequency>
-        </plugin>
-    </gazebo> -->
+        </plugin> -->
+
+        <!-- <plugin filename="gz-sim-odometry-publisher-system"
+              name="gz::sim::systems::OdometryPublisher">
+            <odom_frame>odom</odom_frame>
+            <robot_base_frame>base_footprint</robot_base_frame>
+            <odom_topic>/odom</odom_topic>
+            <tf_topic>/tf</tf_topic>
+            <dimensions>2</dimensions>
+            <odom_publish_frequency>20</odom_publish_frequency>
+        </plugin> -->
+    </gazebo>
 </robot>

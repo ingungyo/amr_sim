@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<robot name="ammr_sj" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+<robot name="zinger" xmlns:xacro="http://www.ros.org/wiki/xacro" >
 
     <!--
         A macro to create a wheel link and the joint for the wheel
@@ -9,13 +9,25 @@
         - radius: Radius of the wheel in meters
         - width: Width of the wheel in meters
         - offset: The distance between the wheel and the steering plate above the wheel. In meters.
+
+        [ADDED]
+        - caster_trail: steering 축 기준 wheel을 x(-)로 빼는 값(=트레일). caster 정렬성에 매우 중요
+        - wheel_joint_damping / wheel_joint_friction: wheel spin 조인트 동특성
     -->
-    <xacro:macro name="wheel_assembly" params="name mass radius width offset">
+    <xacro:macro name="wheel_assembly"
+                 params="name mass radius width offset
+                         caster_trail:=0.0
+                         wheel_joint_damping:=0.02
+                         wheel_joint_friction:=0.0">
         <joint name="joint_steering_to_wheel_${name}" type="continuous">
-            <origin rpy="0 0 0" xyz="0 0 ${-1 * (radius + offset -0.005)}"/>
+            <!-- 핵심: caster_trail 적용 -->
+            <origin rpy="0 0 0" xyz="${-caster_trail} 0 ${-1 * (radius + offset)}"/>
             <parent link="link_steering_${name}"/>
             <child link="link_wheel_${name}"/>
             <axis xyz="0.0 1.0 0.0"/>
+
+            <!-- wheel이 잘 굴러가게 -->
+            <dynamics damping="${wheel_joint_damping}" friction="${wheel_joint_friction}"/>
         </joint>
 
         <link name="link_wheel_${name}">
@@ -47,51 +59,6 @@
     </xacro:macro>
 
     <!--
-        A macro to create a caster wheel (passive wheel)
-        Parameters:
-        - name: Name of the caster, e.g. left_front
-        - mass: Mass of the caster wheel in kilogram
-        - radius: Radius of the caster wheel in meters
-        - width: Width of the caster wheel in meters
-        - x_pos: X position relative to base_link center
-        - y_pos: Y position relative to base_link center
-    -->
-    <xacro:macro name="caster_wheel_assembly" params="name mass radius width x_pos y_pos">
-        <joint name="joint_chassis_to_caster_${name}" type="fixed">
-            <parent link="base_link"/>
-            <child link="link_caster_${name}"/>
-            <origin rpy="0 0 0" xyz="${x_pos} ${y_pos} ${radius}"/>
-        </joint>
-
-        <link name="link_caster_${name}">
-            <inertial>
-                <origin xyz="0 0 0" rpy="${PI/2} 0 0" />
-                <mass value="${mass}"/>
-                <inertia
-                    ixx="${(mass/12) * (3*radius*radius + width*width)}"
-                    ixy="0"
-                    ixz="0"
-                    iyy="${(mass/12) * (3*radius*radius + width*width)}"
-                    iyz="0"
-                    izz="${(mass/2) * (radius*radius)}"/>
-            </inertial>
-            <visual>
-                <origin rpy="${PI/2} 0 0" xyz="0 0 0"/>
-                <geometry>
-                    <cylinder length="${width}" radius="${radius}" />
-                </geometry>
-                <material name="gray"/>
-            </visual>
-            <collision>
-                <origin rpy="${PI/2} 0 0" xyz="0 0 0"/>
-                <geometry>
-                    <cylinder length="${width}" radius="${radius}" />
-                </geometry>
-            </collision>
-        </link>
-    </xacro:macro>
-
-    <!--
         A macro to create a steering link and the joint for the steering unit
         Parameters:
         - name: Name of the steering unit, e.g. left_rear
@@ -101,17 +68,33 @@
         - chassis_height: The height of the chassis
         - steering_radius: Radius of the steering unit in meters
         - wheel_radius: Radius of the wheel in meters
+        - wheel_base: Base of the wheel in meters
+        - wheel_track: Track of the wheel in meters
         - thickness: Thickness of the steering unit
         - offset: The distance between the wheel and the steering plate above the wheel. In meters.
         - x_reflect: Direction multiplier for X offsets. Either 1 or -1
         - y_reflect: Direction multiplier for Y offsets. Either 1 or -1
+
+        [ADDED]
+        - steer_joint_damping / steer_joint_friction: steering yaw 조인트 동특성
     -->
-    <xacro:macro name="steering_assembly" params="name mass chassis_length chassis_width chassis_height steering_radius thickness wheel_radius wheel_base wheel_track offset x_reflect y_reflect">
+    <xacro:macro name="steering_assembly"
+                 params="name mass chassis_length chassis_width chassis_height
+                         steering_radius thickness wheel_radius wheel_base wheel_track offset
+                         x_reflect y_reflect
+                         steer_joint_damping:=0.05
+                         steer_joint_friction:=0.0">
         <joint name="joint_chassis_to_steering_${name}" type="continuous">
-            <origin rpy="0 0 0" xyz="${x_reflect * (0.5 * wheel_base)} ${y_reflect * (0.5 * wheel_track)} ${wheel_radius + offset}"/>
-            <parent link="base_link"/>
+            <origin rpy="0 0 0"
+                    xyz="${x_reflect * (0.5 * wheel_base)}
+                        ${y_reflect * (0.5 * wheel_track)}
+                        ${-(0.5 * chassis_height + chassis_bottom_z) + (2 * wheel_radius) + offset + (0.5 * thickness)}"/>
+            <parent link="chassis_link"/>
             <child link="link_steering_${name}"/>
             <axis xyz="0.0 0.0 1.0"/>
+
+            <!-- steering이 쉽게 돌아가게 -->
+            <dynamics damping="${steer_joint_damping}" friction="${steer_joint_friction}"/>
         </joint>
 
         <link name="link_steering_${name}">
@@ -158,7 +141,7 @@
     </xacro:macro>
 
     <!--
-        A macro to create a wheel link and the joint for the wheel
+        A macro to create a drive module (steering + wheel) for powered swerve
         Parameters:
         - name: Name of the wheel, e.g. left_rear
         - chassis_length: The length of the chassis
@@ -170,8 +153,18 @@
         - offset: The distance between the wheel and the steering plate above the wheel. In meters.
         - x_reflect: Direction multiplier for X offsets. Either 1 or -1
         - y_reflect: Direction multiplier for Y offsets. Either 1 or -1
+
+        [ADDED: pass-through defaults for dynamics + caster_trail]
+        - caster_trail: 기본은 0 (구동 모듈은 굳이 캐스터 트레일 필요 없음)
     -->
-    <xacro:macro name="drive_module_assembly" params="name chassis_length chassis_width chassis_height wheel_mass wheel_radius wheel_width wheel_base wheel_track steering_mass steering_radius steering_thickness offset x_reflect y_reflect">
+    <xacro:macro name="drive_module_assembly"
+                 params="name chassis_length chassis_width chassis_height
+                         wheel_mass wheel_radius wheel_width wheel_base wheel_track
+                         steering_mass steering_radius steering_thickness
+                         offset x_reflect y_reflect
+                         caster_trail:=0.0
+                         steer_joint_damping:=0.05 steer_joint_friction:=0.0
+                         wheel_joint_damping:=0.02 wheel_joint_friction:=0.0">
         <xacro:steering_assembly
             name="${name}"
             mass="${steering_mass}"
@@ -185,15 +178,62 @@
             wheel_radius="${wheel_radius}"
             offset="${offset}"
             x_reflect="${x_reflect}"
-            y_reflect="${y_reflect}"/>
+            y_reflect="${y_reflect}"
+            steer_joint_damping="${steer_joint_damping}"
+            steer_joint_friction="${steer_joint_friction}"/>
+
         <xacro:wheel_assembly
             name="${name}"
             mass="${wheel_mass}"
             radius="${wheel_radius}"
             width="${wheel_width}"
-            offset="${offset + 0.5 * steering_thickness}"/>
+            offset="${offset + 0.5 * steering_thickness}"
+            caster_trail="${caster_trail}"
+            wheel_joint_damping="${wheel_joint_damping}"
+            wheel_joint_friction="${wheel_joint_friction}"/>
     </xacro:macro>
 
+    <!--
+        A macro to create an unpowered caster module (steering + wheel)
+        - drive_module_assembly와 동일 구조지만, hamr에서 컨트롤러에 포함시키지 않으면 캐스터로 동작
+
+        [ADDED]
+    -->
+    <xacro:macro name="caster_module_assembly"
+                 params="name chassis_length chassis_width chassis_height
+                         wheel_mass wheel_radius wheel_width wheel_base wheel_track
+                         steering_mass steering_radius steering_thickness
+                         offset x_reflect y_reflect
+                         caster_trail:=0.01
+                         steer_joint_damping:=0.02 steer_joint_friction:=0.0
+                         wheel_joint_damping:=0.01 wheel_joint_friction:=0.0">
+        <xacro:steering_assembly
+            name="${name}"
+            mass="${steering_mass}"
+            chassis_length="${chassis_length}"
+            chassis_width="${chassis_width}"
+            chassis_height="${chassis_height}"
+            wheel_base="${wheel_base}"
+            wheel_track="${wheel_track}"
+            steering_radius="${steering_radius}"
+            thickness="${steering_thickness}"
+            wheel_radius="${wheel_radius}"
+            offset="${offset}"
+            x_reflect="${x_reflect}"
+            y_reflect="${y_reflect}"
+            steer_joint_damping="${steer_joint_damping}"
+            steer_joint_friction="${steer_joint_friction}"/>
+
+        <xacro:wheel_assembly
+            name="${name}"
+            mass="${wheel_mass}"
+            radius="${wheel_radius}"
+            width="${wheel_width}"
+            offset="${offset + 0.5 * steering_thickness}"
+            caster_trail="${caster_trail}"
+            wheel_joint_damping="${wheel_joint_damping}"
+            wheel_joint_friction="${wheel_joint_friction}"/>
+    </xacro:macro>
 
     <!-- CONTROLLERS -->
     <xacro:macro name="steering_module_controller" params="name">
@@ -219,7 +259,7 @@
 
     <!-- SENSORS -->
     <!-- IMU sensor -->
-    <xacro:macro name="imu_frame" params="name parent_link *origin">
+    <xacro:macro name="sensor_imu" params="name parent_link *origin">
         <xacro:property name="mass"     value="0.01"/>
         <xacro:property name="length_x" value="0.01" />
         <xacro:property name="length_y" value="0.01" />
@@ -230,12 +270,12 @@
         <xacro:property name="collision_z_offset" value="${0.5 * length_z}" />
 
         <joint name="joint_body_to_sensor_imu_${name}" type="fixed">
+            <xacro:insert_block name="origin"/>
             <parent link="${parent_link}"/>
-            <child link="${name}"/>
-            <origin xyz="0.0 0.0 0.0"/>
+            <child link="link_sensor_imu_${name}"/>
         </joint>
 
-        <link name="${name}">
+        <link name="link_sensor_imu_${name}">
             <visual>
                 <origin xyz="${collision_x_offset} ${collision_y_offset} ${collision_z_offset}"/>
                 <geometry>
@@ -262,40 +302,40 @@
         </link>
     </xacro:macro>
 
-    <!-- Base_scan == Lidar Center  sensor -->
-    <xacro:macro name="sensor_lidar" params="name parent_link chassis_top_relative_height">
+    <!-- Lidar sensor -->
+    <xacro:macro name="sensor_lidar" params="name parent_link *origin">
 
-        <xacro:property name="mass"     value="0.17"/>
-        <xacro:property name="length_x" value="0.071" />
-        <xacro:property name="length_y" value="0.10" />
-        <xacro:property name="length_z" value="0.06" />
+        <xacro:property name="mass"     value="1.0"/>
+        <xacro:property name="length_x" value="0.15" />
+        <xacro:property name="length_y" value="0.15" />
+        <xacro:property name="length_z" value="0.15" />
 
         <xacro:property name="collision_x_offset" value="0" />
         <xacro:property name="collision_y_offset" value="0" />
-        <xacro:property name="collision_z_offset" value="${chassis_top_relative_height}" />
+        <xacro:property name="collision_z_offset" value="0" />
 
         <joint name="joint_body_to_sensor_lidar_${name}" type="fixed">
+            <xacro:insert_block name="origin"/>
             <parent link="${parent_link}"/>
             <child link="link_sensor_lidar_${name}"/>
-            <origin rpy="0 0 0" xyz="${collision_x_offset} ${collision_y_offset} ${collision_z_offset}"/>
         </joint>
 
         <link name="link_sensor_lidar_${name}">
             <visual>
-                <origin rpy="0 0 0" xyz="0.0 0 ${0.5 * length_z}"/>
+                <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
                 <geometry>
                     <box size="${length_x} ${length_y} ${length_z}"/>
                 </geometry>
             </visual>
             <collision>
-                <origin rpy="0 0 0" xyz="0.0 0 ${0.5 * length_z}"/>
+                <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
                 <geometry>
                     <box size="${length_x} ${length_y} ${length_z}"/>
                 </geometry>
             </collision>
             <inertial>
                 <mass value="${mass}" />
-                <origin rpy="0 0 0" xyz="0.0 0 ${0.5 * length_z}"/>
+                <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
                 <inertia
                     ixx="${(1/12) * mass * (length_y*length_y + length_z*length_z)}"
                     ixy="0.0"
@@ -306,11 +346,5 @@
             </inertial>
         </link>
     </xacro:macro>
-
-    <!-- Bump sensor -->
-
-    <!-- Sonar sensor -->
-
-    <!-- IR sensor -->
 
 </robot>
