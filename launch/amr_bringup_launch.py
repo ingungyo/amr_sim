@@ -33,7 +33,7 @@ def get_robot_model_prefix(context, *args, **kwargs):
 def generate_launch_description():
     amr_bringup_dir = get_package_share_directory('amr_sim')
 
-    amr_model = 'bcr_bot/' # default = 'default/' ex)ammr = 'ammr/'
+    amr_model = 'ammr_sj/' # default = 'default/' ex)ammr = 'ammr/'
 
     robot_description_dir = PathJoinSubstitution([amr_bringup_dir, 'description', amr_model])
     amr_bringup_launch_file_dir = os.path.join(amr_bringup_dir, "launch")
@@ -47,11 +47,11 @@ def generate_launch_description():
     interface_param_filename = amr_model + 'amr_interface_param.yaml'
     front_lidar_param_filename = amr_model + 'amr_sick_picoscan_front.launch'
     rear_lidar_param_filename = amr_model + 'amr_sick_picoscan_rear.launch'
-    lidar_merger_param_filename = amr_model + 'amr_lidar_merger_param.yaml'
+    lidar_merger_param_filename = amr_model + 'amr_dual_laser_merger_param.yaml'
     pointcloud_merger_param_filename = amr_model + 'amr_pointcloud_merger_param.yaml'
-    robot_description_filename = 'bcr_bot.xacro'
+    robot_description_filename = 'ammr_sj.xacro'
 
-    navigation_param_filename = amr_model + 'nav2_params.yaml'
+    navigation_param_filename = amr_model + 'amr_navigation.yaml'
     navigation_map_filename = 'test_sh.yaml'
     
     # Interface에서 사용할 파라미터 파일 경로들 (LaunchConfiguration)
@@ -184,11 +184,11 @@ def generate_launch_description():
             'slam_param_file': slam_param_file,
             'use_state_publisher': 'false',
             'use_dual_lidar': 'false',
-            'use_lidar_merger': 'false',
+            'use_lidar_merger': 'true',
             'use_pointcloud_merger': 'false',
             'use_core': 'false',
             'use_docking': 'false',
-            'use_interface': 'true',
+            'use_interface': 'false',
         }.items(),
     )
 
@@ -228,6 +228,6 @@ def generate_launch_description():
     ld.add_action(declare_slam_param_file_cmd)
     ld.add_action(check_param_file_action)
     ld.add_action(amr_core_bringup_include)
-    # ld.add_action(amr_nav_bringup_include)
+    ld.add_action(amr_nav_bringup_include)
 
     return ld

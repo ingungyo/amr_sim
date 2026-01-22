@@ -304,8 +304,6 @@ def generate_launch_description():
     ld.add_action(gz_spawn_entity)
     ld.add_action(gz_ros2_bridge)
     ld.add_action(controller_launch)
-    
-    # ld.add_action(declare_swerve_controller_param_file_cmd)
     ld.add_action(swerve_controller_launch)
     
     

@@ -21,7 +21,7 @@ swerve_controller:
     joint_state_topic: joint_states
     
     # TF settings
-    publish_tf: false  # EKF가 odom->base_footprint TF를 발행하므로 비활성화
+    publish_tf: true  # EKF가 odom->base_footprint TF를 발행하므로 비활성화
     cycle_fequency: 20
 
     # QoS (depth only for simplicity)

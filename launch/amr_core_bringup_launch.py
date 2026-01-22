@@ -246,7 +246,7 @@ def generate_launch_description():
     lidar_merger_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([amr_lidar_merger_dir, 'launch',
-                                  'lidar_merger_launch.py'])
+                                  'dual_laser_merger_launch.py'])
         ),
         launch_arguments={
             'namespace': namespace,
