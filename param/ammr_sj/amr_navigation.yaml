@@ -69,8 +69,8 @@ controller_server:
   ros__parameters:
     controller_frequency: 20.0
     costmap_update_timeout: 0.5
-    min_x_velocity_threshold: 0.05
-    min_y_velocity_threshold: 0.05
+    min_x_velocity_threshold: 0.01
+    min_y_velocity_threshold: 0.01
     min_theta_velocity_threshold: 0.01
     failure_tolerance: 0.3
     progress_checker_plugins: ["progress_checker"]
@@ -92,18 +92,18 @@ controller_server:
       plugin: "nav2_mppi_controller::MPPIController"
       time_steps: 56
       model_dt: 0.05
-      batch_size: 400
+      batch_size: 1000
       vx_std: 0.2
-      vy_std: 0.2
-      wz_std: 0.2
+      vy_std: 10.0 # 0.2
+      wz_std: 0.4
       vx_max: 1.0
       vx_min: 0.0
-      vy_max: 0.5
+      vy_max: 0.0 #0.5
       wz_max: 1.5
       ax_max: 1.0
       ax_min: -1.0
-      ay_min: -0.5
-      ay_max: 0.5
+      ay_min: 0.0
+      ay_max: 0.0
       az_max: 3.0
       iteration_count: 1
       temperature: 0.3
@@ -123,7 +123,7 @@ controller_server:
         min_turning_r: 0.0
       critics: ["ConstraintCritic", "CostCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
       ConstraintCritic:
-        enabled: false
+        enabled: true
         cost_power: 1
         cost_weight: 4.0
       GoalCritic:
@@ -375,8 +375,8 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [1.0, 0.0, 3.0]
-    min_velocity: [-1.0, 0.0, -3.0]
+    max_velocity: [1.0, 0.0, 1.5]
+    min_velocity: [-1.0, 0.0, -1.5]
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0
     max_accel: [0.5, 0.0, 1.5]
