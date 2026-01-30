@@ -38,7 +38,7 @@ swerve_controller:
     robot_geometry:
       wheel_base: 0.728 # The distance between the front and rear steering axles (meters)
       wheel_track: 0.274 # The distance between the left and right steering axles (meters)
-      wheel_radius: 0.15 # The radius of the drive wheels (meters)
+      wheel_radius: 0.075 # The radius of the drive wheels (meters)
       wheel_width: 0.05 # The width of the drive wheels (meters)
 
     # Drive module specific parameters
