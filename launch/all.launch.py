@@ -12,7 +12,7 @@ def generate_launch_description():
     sim_pkg = get_package_share_directory('amr_sim')
     sim_action = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(sim_pkg, 'launch', 'amr_sim_simulator_launch.py')
+            os.path.join(sim_pkg, 'launch', 'amr_simulator_launch.py')
         )
     )
     ld.add_action(sim_action)

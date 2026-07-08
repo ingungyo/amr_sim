@@ -90,103 +90,45 @@ controller_server:
       xy_goal_tolerance: 0.1
       yaw_goal_tolerance: 0.1
     FollowPath:
-      plugin: "nav2_mppi_controller::MPPIController"
-      time_steps: 56
-      model_dt: 0.05
-      batch_size: 1000
-      # vx_std: 0.5
-      # vy_std: 10.0 # 0.2
-      # wz_std: 0.4
-      # vx_max: 1.0
-      # vx_min: 0.0
-      # vy_max: 0.0 #0.5
-      # wz_max: 1.5
-      # ax_max: 1.0
-      # ax_min: -1.0
-      # ay_min: 0.0
-      # ay_max: 0.0
-      # az_max: 3.0
-      vx_std: 10.0
-      vy_std: 0.5 # 0.2
-      wz_std: 0.4
-      vx_max: 0.0
-      vx_min: 0.0
-      vy_max: 1.0 #0.5
-      wz_max: 1.5
-      ax_max: 0.0
-      ax_min: -1.0
-      ay_min: -1.0
-      ay_max: 1.0
-      az_max: 3.0
-      iteration_count: 1
-      temperature: 0.3
-      gamma: 0.015
-      prune_distance: 5.0 ##for up to max speed default = 1.5
-      motion_model: "Omni"
-      visualize: false
-      reset_period: 1.0 # (only in Humble)
-      regenerate_noises: false
-      TrajectoryVisualizer:
-        trajectory_step: 5
-        time_step: 3
-      TrajectoryValidator:
-        plugin: "mppi::DefaultOptimalTrajectoryValidator"
-        collision_lookahead_time: 2.0
-        consider_footprint: false
-      AckermannConstraints:
-        min_turning_r: 0.0
-      critics: ["ConstraintCritic", "CostCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
-      ConstraintCritic:
-        enabled: true
-        cost_power: 1
-        cost_weight: 4.0
-      GoalCritic:
-        enabled: true
-        cost_power: 1
-        cost_weight: 5.0
-        threshold_to_consider: 1.4
-      GoalAngleCritic:
-        enabled: true
-        cost_power: 1
-        cost_weight: 3.0
-        threshold_to_consider: 0.5
-      PreferForwardCritic:
-        enabled: true
-        cost_power: 1
-        cost_weight: 5.0
-        threshold_to_consider: 0.5
-      ObstaclesCritic:
-        enabled: true
-        cost_power: 1
-        repulsion_weight: 1.5
-        critical_weight: 20.0
-        consider_footprint: true
-        collision_cost: 10000.0
-        collision_margin_distance: 0.1
-        near_goal_distance: 0.5
-      PathAlignCritic:
-        enabled: true
-        cost_power: 1
-        cost_weight: 14.0
-        max_path_occupancy_ratio: 0.05
-        trajectory_point_step: 3
-        threshold_to_consider: 0.5
-        offset_from_furthest: 20
-        use_path_orientations: false
-      PathFollowCritic:
-        enabled: true
-        cost_power: 1
-        cost_weight: 5.0
-        offset_from_furthest: 5
-        threshold_to_consider: 1.4
-      PathAngleCritic:
-        enabled: true
-        cost_power: 1
-        cost_weight: 2.0
-        offset_from_furthest: 4
-        threshold_to_consider: 0.5
-        max_angle_to_furthest: 1.0
-        mode: 0
+      plugin: "dwb_core::DWBLocalPlanner"
+      debug_trajectory_details: True
+      min_vel_x: 0.0
+      min_vel_y: -0.3
+      max_vel_x: 0.3
+      max_vel_y: 0.3
+      max_vel_theta: 0.3
+      min_speed_xy: 0.0
+      max_speed_xy: 0.3
+      min_speed_theta: 0.0
+      acc_lim_x: 3.0
+      acc_lim_y: 3.0
+      acc_lim_theta: 3.0
+      decel_lim_x: -3.0
+      decel_lim_y: -3.0
+      decel_lim_theta: -3.0
+      vx_samples: 30
+      vy_samples: 30
+      vtheta_samples: 30
+      sim_time: 1.8
+      linear_granularity: 0.05
+      angular_granularity: 0.05
+
+      transform_tolerance: 0.5
+      xy_goal_tolerance: 0.1
+      trans_stopped_velocity: 0.01
+      short_circuit_trajectory_evaluation: True
+      stateful: True
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+      BaseObstacle.scale: 0.02
+      PathAlign.scale: 20.0
+      PathAlign.forward_point_distance: 0.3
+      GoalAlign.scale: 24.0
+      GoalAlign.forward_point_distance: 0.3
+      PathDist.scale: 32.0
+      GoalDist.scale: 10.0
+      RotateToGoal.scale: 30.0
+      RotateToGoal.slowing_factor: 5.0
+      RotateToGoal.lookahead_time: 1.2
 
 local_costmap:
   local_costmap:
@@ -389,12 +331,12 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [0.0, 1.0, 3.0]
-    min_velocity: [0.0, -1.0, -3.0]
+    max_velocity: [1.0, 0.0, 3.0]
+    min_velocity: [-1.0, 0.0, -3.0]
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0
-    max_accel: [0.0, 1.0, 3.0]
-    max_decel: [0.0, -1.0, -3.0]
+    max_accel: [1.0, 0.0, 3.0]
+    max_decel: [-1.0, 0.0, -3.0]
     odom_topic: "odom"
     odom_duration: 0.1
     use_realtime_priority: false
