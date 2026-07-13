@@ -1,0 +1,13 @@
+# P2 멀티로봇 스폰 정의. name = ROS namespace + Gazebo entity + tf prefix.
+# 대수는 여기서 robots 항목을 늘리면 됨(나중에 결정). 초기 pose = [x, y, z, R, P, Y].
+# 지금은 home(x11~15,y5~8) 안에 2대(간격 두고, deadlock 회피용 시차는 dispatch 단계에서).
+sim:
+  ros__parameters:
+    world_name: "p2"
+    robots:
+      - name: "robot0"
+        model: "p2bot"
+        initial_pose: [11.8, 6.5, 0.15, 0.0, 0.0, 0.0]
+      # - name: "robot1"
+      #   model: "p2bot"
+      #   initial_pose: [14.2, 6.5, 0.15, 0.0, 0.0, 3.14159]
