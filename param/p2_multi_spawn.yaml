@@ -7,7 +7,10 @@ sim:
     robots:
       - name: "robot0"
         model: "p2bot"
-        initial_pose: [11.8, 6.5, 0.15, 0.0, 0.0, 0.0]
+        initial_pose: [11.8, 6.5, 0.15, 0.0, 0.0, -1.57]
+      # - name: "robot0"
+      #   model: "p2bot_hload"
+      #   initial_pose: [11.8, 6.5, 0.15, 0.0, 0.0, -1.57]
       # - name: "robot1"
       #   model: "p2bot"
       #   initial_pose: [14.2, 6.5, 0.15, 0.0, 0.0, 3.14159]
