@@ -47,7 +47,7 @@
   <!-- 라이다: 공통 스캔 평면. 상단 배치로 바꾸려면 lidar_z / lidar_x 두 줄만 수정 -->
   <xacro:property name="lidar_z"      value="0.2"/>
   <xacro:property name="lidar_radius" value="0.05"/>
-  <xacro:property name="lidar_x"      value="${chassis_l/2 + lidar_radius}"/>
+  <xacro:property name="lidar_x" value="${chassis_l/2}"/>
 
   <xacro:arg name="two_d_lidar_enabled" default="true"/>
 

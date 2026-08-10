@@ -56,7 +56,7 @@
   <!-- 라이다: LIFT_L과 공통 스캔 평면 z=0.20. 섀시 내부 높이라 전방 돌출 마운트 -->
   <xacro:property name="lidar_z"      value="0.20"/>
   <xacro:property name="lidar_radius" value="0.05"/>
-  <xacro:property name="lidar_x"      value="${chassis_l/2 + lidar_radius}"/>
+  <xacro:property name="lidar_x" value="${chassis_l/2}"/>
 
   <xacro:arg name="two_d_lidar_enabled" default="true"/>
 
